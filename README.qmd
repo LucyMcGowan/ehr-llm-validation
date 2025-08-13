@@ -17,9 +17,9 @@ Simulates raw clinical data and then simulates realistic extraction errors (miss
 source("script.R")
 ```
 
-This will:
-- Generate synthetic patient data with BMI and blood pressure measurements
-- Simulate extraction errors 
+This will:  
+- Generate synthetic patient data with BMI and blood pressure measurements  
+- Simulate extraction errors  
 - Run an audit comparing extracted vs source values
 
 ## Key functions
@@ -69,6 +69,7 @@ ehr_sim <- simulate_ehr_from_epic(
 ## Run Audit and Visualize Results
 
 ```{r}
+#| label: plot-bmi-validation
 audit <- run_audit(ehr_sim, epic_raw, roadmap)
 
 audit |>

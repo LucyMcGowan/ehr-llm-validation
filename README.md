@@ -18,9 +18,11 @@ against the source to identify problems.
 source("script.R")
 ```
 
-This will: - Generate synthetic patient data with BMI and blood pressure
-measurements - Simulate extraction errors - Run an audit comparing
-extracted vs source values
+This will:  
+- Generate synthetic patient data with BMI and blood pressure
+measurements  
+- Simulate extraction errors  
+- Run an audit comparing extracted vs source values
 
 ## Key functions
 
@@ -90,4 +92,4 @@ audit |>
   labs(x = "BMI", fill = "")
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-4-1.png)
+![](README_files/figure-commonmark/plot-bmi-validation-1.png)
