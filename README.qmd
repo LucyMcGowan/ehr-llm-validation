@@ -1,47 +1,43 @@
-# EHR Data Extraction Audit
+---
+title: "EHR Data Extraction Audit"
+format: gfm
+---
 
-
-Simulates and audits EHR data extraction accuracy for clinical
-measurements.
+Simulates and audits EHR data extraction accuracy for clinical measurements.
 
 ## What it does
 
-Simulates raw clinical data and then simulates realistic extraction
-errors (missing values, measurement noise, transcription mistakes). Then
-follows the process detailed in [Lotspeich et
-al.](https://arxiv.org/abs/2502.05380) to audit the extracted data
-against the source to identify problems.
+Simulates raw clinical data and then simulates realistic extraction errors (missing values, measurement noise, transcription mistakes). Then follows the process detailed in [Lotspeich et al.](https://arxiv.org/abs/2502.05380) to audit the extracted data against the source to identify problems.
 
 ## Running the code
 
-``` r
+```{r}
+#| message: false
+#| warning: false
 source("script.R")
 ```
 
-This will: - Generate synthetic patient data with BMI and blood pressure
-measurements - Simulate extraction errors - Run an audit comparing
-extracted vs source values
+This will:
+- Generate synthetic patient data with BMI and blood pressure measurements
+- Simulate extraction errors 
+- Run an audit comparing extracted vs source values
 
 ## Key functions
 
-- `simulate_epic()` - creates realistic “gold standard” raw clinical
-  data
-- `simulate_ehr_from_epic()` - adds extraction errors (missing data,
-  noise, etc.)
-- `run_audit()` - compares extracted values to source, searches notes
-  for keywords when data missing
+- `simulate_epic()` - creates realistic "gold standard" raw clinical data
+- `simulate_ehr_from_epic()` - adds extraction errors (missing data, noise, etc.)
+- `run_audit()` - compares extracted values to source, searches notes for keywords when data missing
 
 ## Audit categories
 
 - **Extracted Value Correct** - perfect match
-- **Extracted Value Incorrect** - values don’t match source  
-- **\[Keyword\] Found** - missing data but diagnostic keyword found in
-  notes
+- **Extracted Value Incorrect** - values don't match source  
+- **[Keyword] Found** - missing data but diagnostic keyword found in notes
 - **Not Found** - no data or keywords
 
 ## Requirements
 
-``` r
+```r
 library(tidyverse)
 ```
 
@@ -49,7 +45,7 @@ library(tidyverse)
 
 Simulate initial raw data:
 
-``` r
+```{r}
 epic_raw <- simulate_epic(
   n_patients = 12, # 12 patients
   n_visits = 3, # 3 visits each
@@ -60,7 +56,7 @@ epic_raw <- simulate_epic(
 
 Adjust error rates and noise levels in the simulation parameters:
 
-``` r
+```{r}
 ehr_sim <- simulate_ehr_from_epic(
   epic_raw,
   p_missing = 0.15, # 15% missing
@@ -72,7 +68,7 @@ ehr_sim <- simulate_ehr_from_epic(
 
 ## Run Audit and Visualize Results
 
-``` r
+```{r}
 audit <- run_audit(ehr_sim, epic_raw, roadmap)
 
 audit |>
@@ -89,5 +85,3 @@ audit |>
   theme_minimal() +
   labs(x = "BMI", fill = "")
 ```
-
-![](README_files/figure-commonmark/unnamed-chunk-4-1.png)
