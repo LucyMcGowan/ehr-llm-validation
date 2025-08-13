@@ -1,0 +1,6 @@
+^LICENSE\.md$
+^README\.qmd$
+^README\.md$
+^air\.toml$
+\.vscode$
+README_files

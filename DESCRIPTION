@@ -1,0 +1,20 @@
+Package: auditsim
+Title: EHR Data Extraction Audit Tools
+Version: 0.0.0.9000
+Authors@R: 
+    person("Lucy", "D'Agostino McGowan", , "lucydagostino@gmail.com", role = c("aut", "cre"))
+Description: Simulates and audits electronic health record (EHR) data extraction 
+    accuracy for clinical measurements. Provides tools to generate realistic 
+    clinical data, simulate extraction errors, and audit extracted values against 
+    source data.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Imports: 
+    dplyr,
+    rlang,
+    stringr,
+    tibble,
+    tidyr,
+    tidyselect

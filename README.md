@@ -1,4 +1,4 @@
-# EHR Data Extraction Audit
+# auditsim
 
 
 Simulates and audits EHR data extraction accuracy for clinical
@@ -12,17 +12,33 @@ follows the process detailed in [Lotspeich et
 al.](https://arxiv.org/abs/2502.05380) to audit the extracted data
 against the source to identify problems.
 
+## Installation
+
+``` r
+# Install from GitHub (this will only work if you login because right now it is a private repo but we can change that!)
+# devtools::install_github("lucymcgowan/auditsim")
+
+# Or install locally if you download this repo with the package files
+# install.packages("path/to/auditsim", repos = NULL, type = "source")
+
+# Load the package
+library(auditsim)
+```
+
 ## Running the code
 
 ``` r
-source("script.R")
+library(auditsim)
+
+# Generate sample data and run audit
+epic_raw <- simulate_epic()
+ehr_sim <- simulate_ehr_from_epic(epic_raw)
+audit_results <- run_audit(ehr_sim, epic_raw, roadmap)
 ```
 
-This will:  
-- Generate synthetic patient data with BMI and blood pressure
-measurements  
-- Simulate extraction errors  
-- Run an audit comparing extracted vs source values
+This will: - Generate synthetic patient data with BMI and blood pressure
+measurements - Simulate extraction errors - Run an audit comparing
+extracted vs source values
 
 ## Key functions
 
@@ -32,11 +48,12 @@ measurements
   noise, etc.)
 - `run_audit()` - compares extracted values to source, searches notes
   for keywords when data missing
+- `roadmap` - default mapping of variables to diagnostic keywords
 
 ## Audit categories
 
 - **Extracted Value Correct** - perfect match
-- **Extracted Value Incorrect** - values don’t match source  
+- **Extracted Value Incorrect** - values don’t match source
 - **\[Keyword\] Found** - missing data but diagnostic keyword found in
   notes
 - **Not Found** - no data or keywords
@@ -44,7 +61,14 @@ measurements
 ## Requirements
 
 ``` r
-library(tidyverse)
+# Core dependencies (automatically installed with the package)
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(stringr)
+
+# For visualization examples
+library(ggplot2)
 ```
 
 ## Customizing
@@ -77,6 +101,8 @@ ehr_sim <- simulate_ehr_from_epic(
 ``` r
 audit <- run_audit(ehr_sim, epic_raw, roadmap)
 
+library(tidyverse)
+
 audit |>
   filter(variable == "body_mass_index") |>
   pivot_longer(cols = c(reviewed_value, extracted_value)) |>
@@ -85,7 +111,7 @@ audit |>
   ggplot(aes(value, fill = name)) +
   geom_bar(position = position_dodge2(preserve = "single")) +
   scale_fill_manual(
-    values = c("cornflower blue", "orange"),
+    values = c("cornflowerblue", "orange"),
     labels = c("Extracted Value", "Validated Value")
   ) +
   theme_minimal() +
