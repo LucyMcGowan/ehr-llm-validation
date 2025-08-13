@@ -127,40 +127,12 @@ run_audit <- function(ehr_wide, epic_raw, roadmap) {
       if_missing_search_for, notes
     )
 }
-  
-epic_raw <- simulate_epic(
-  n_patients = 12, 
-  n_visits = 3, 
-  start_date = as.Date("2022-01-01"), 
-  interval = "3 months"
-)
-
-ehr_sim <- simulate_ehr_from_epic(
-  epic_raw, 
-  p_missing = 0.15, 
-  p_exact = 0.7, 
-  bmi_noise_sd = 0.8, 
-  bp_noise_range = -8:8
-)
 
 roadmap <- tibble(
   variable = c("body_mass_index", "systolic_blood_pressure", "diastolic_blood_pressure"),
   if_missing_search_for = c("Obesity", "Hypertension", "Hypertension")
 )
 
-audit <- run_audit(ehr_sim, epic_raw, roadmap)
 
-audit |> 
-  filter(variable == "body_mass_index") |> 
-  pivot_longer(cols = c(reviewed_value, extracted_value)) |>
-  select(name, value) |>
-  ggplot(aes(value, fill = name)) +
-  geom_bar(position = position_dodge2(preserve = "single")) + 
-  scale_fill_manual(
-    values = c("cornflower blue", "orange"),
-    labels = c("Extracted Value", "Validated Value")
-  ) + 
-  theme_minimal() + 
-  labs(x = "BMI", fill = "")
 
 
