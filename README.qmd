@@ -36,9 +36,9 @@ ehr_sim <- simulate_ehr_from_epic(epic_raw)
 audit_results <- run_audit(ehr_sim, epic_raw, roadmap)
 ```
 
-This will:
-- Generate synthetic patient data with BMI and blood pressure measurements
-- Simulate extraction errors
+This will:  
+- Generate synthetic patient data with BMI and blood pressure measurements  
+- Simulate extraction errors  
 - Run an audit comparing extracted vs source values
 
 ## Key functions
