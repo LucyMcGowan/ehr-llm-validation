@@ -68,7 +68,7 @@ matches_llm_context = dx_uq |>
       .groups = "drop"
     )
 
-    matches_llm_nocontext = dx_uq |>
+matches_llm_nocontext = dx_uq |>
       cross_join(roadmap_llm_context) |>
       filter(str_detect(DX_DESC, regex(If_Missing_Search_For, ignore_case = TRUE))) |>
       group_by(Variable_Name, DX_CODE, DX_DESC) |>
@@ -88,8 +88,8 @@ pat_dx_flags = pat_dx |>
     has_match_llm_context = !is.na(matched_terms_llm_context),
     matched_terms_llm_context = str_trim(replace_na(matched_terms_llm_context, "")),
     has_match_llm_nocontext = !is.na(matched_terms_llm_nocontext),
-    matched_terms_llm_nocontext = str_trim(replace_na(matched_terms_llm_nocontext, "")))
-  ) 
+    matched_terms_llm_nocontext = str_trim(replace_na(matched_terms_llm_nocontext, ""))
+    )
 
 # Check the first few rows of matches -- Looks great!  
 pat_dx_flags |> 
