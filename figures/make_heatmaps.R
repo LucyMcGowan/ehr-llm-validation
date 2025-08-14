@@ -14,7 +14,7 @@ val_pat_id = read.csv("~/Documents/Allostatic_load_audits/all_ali_dat.csv") |>
   pull(PAT_MRN_ID)
 
 # Function to produce heatmaps of EHR vs. Roadmap and then Roadmap vs. Chart Review
-make_heatmaps = function(data_path, roadmap_label, save_to) {
+make_heatmaps = function(data_path, roadmap_label, save_to, ehr_vs_chart = FALSE) {
   # Load data, contains: 
   ## Unvalidated ALI components (original extracted EHR data) for all 1000 patients -- "ALI_COMPONENT"
   ## Unvalidated ALI components augmented using audit roadmap for all 1000 patients -- SUPP_ALI_COMPONENT
@@ -107,4 +107,44 @@ make_heatmaps = function(data_path, roadmap_label, save_to) {
          y = roadmap_label,) 
   ggsave(filename = save_to[2],
          device = "png", width = 8, height = 4, units = "in")
+  
+  if(ehr_vs_chart) {
+    ## Plot heatmap of ALI_COMPONENT vs. CHART_ALI_COMPONENT
+    ### Create dataframe of all combinations so that the geom_tile() will be complete
+    all_combo = expand.grid(ALI_COMPONENT = c("Yes", "No", "Missing"), 
+                            SUPP_ALI_COMPONENT = c("Yes", "No", "Missing"))
+    all_data |> 
+      filter(PAT_MRN_ID %in% val_pat_id) |> ### Susbet to patients undergoing chart review
+      group_by(ALI_COMPONENT, SUPP_ALI_COMPONENT) |> 
+      summarize(num = n()) |>
+      full_join(all_combo) |> 
+      mutate(num = if_else(condition = is.na(num),
+                           true = 0, 
+                           false = num)) |> 
+      ggplot(aes(x = ALI_COMPONENT, y = CHART_ALI_COMPONENT, fill = num)) +
+      geom_tile(color = "black",
+                lwd = 0.5,
+                linetype = 1) + 
+      geom_text(aes(label = num), 
+                color = "black", 
+                size = 5) + 
+      scale_fill_gradientn(colors = paper_colors, 
+                           name = "Data\nPoints:", 
+                           guide = guide_colorbar(frame.colour = "black", 
+                                                  ticks.colour = "black", 
+                                                  barwidth = 1, 
+                                                  barheight = 10)) + 
+      theme_minimal(base_size = 14) +
+      theme(legend.position = "right",
+            title = element_text(face = "bold"),
+            axis.title = element_text(face = "bold"),
+            axis.text = element_markdown(),
+            legend.title = element_text(face = "bold"), 
+            strip.background = element_rect(fill = "black"), 
+            strip.text = element_text(face = "bold", color = "white")) + 
+      labs(x = "Unvalidated Allostatic Load Index\nComponent (from the EHR)", 
+           y = "Validated Allostatic Load Index\nComponent (from Chart Review)",) 
+    ggsave(filename = save_to[3],
+           device = "png", width = 8, height = 4, units = "in")
+  }
 }
