@@ -110,3 +110,15 @@ pat_dx_flags |>
   write.csv(here::here("data-raw/patient_data/roadmap_llm_nocontext_validated.csv"), 
             row.names = FALSE)
 
+
+plot_data <- pat_dx_flags |>
+  pivot_longer(cols = c(has_match, has_match_llm_context, has_match_llm_nocontext),
+               names_to = "variable", values_to = "value") |>
+  count(variable, value)
+
+library(ggplot2)
+
+ggplot(plot_data, aes(x = variable, y = n, fill = value)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = n), position = position_dodge()) +
+  theme_minimal() 
