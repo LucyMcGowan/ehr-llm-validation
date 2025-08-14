@@ -8,6 +8,11 @@ library(stringr) ## To wrap plot titles/text
 # Define colors
 paper_colors = c("#ff99ff", "#787ff6", "#8bdddb", "#7dd5f6", "#ffbd59")
 
+# Define vector of IDs of chart review patients 
+val_pat_id = read.csv("~/Documents/Allostatic_load_audits/all_ali_dat.csv") |> 
+  filter(VALIDATED) |> 
+  pull(PAT_MRN_ID)
+
 # Function to produce heatmaps of EHR vs. Roadmap and then Roadmap vs. Chart Review
 make_heatmaps = function(data_path, roadmap_label, save_to) {
   # Load data, contains: 
@@ -70,6 +75,7 @@ make_heatmaps = function(data_path, roadmap_label, save_to) {
   all_combo = expand.grid(CHART_ALI_COMPONENT = c("Yes", "No", "Missing"), 
                           SUPP_ALI_COMPONENT = c("Yes", "No", "Missing"))
   all_data |> 
+    filter(PAT_MRN_ID %in% val_pat_id) |> ### Susbet to patients undergoing chart review
     group_by(CHART_ALI_COMPONENT, SUPP_ALI_COMPONENT) |> 
     summarize(num = n()) |>
     full_join(all_combo) |> 
@@ -97,8 +103,8 @@ make_heatmaps = function(data_path, roadmap_label, save_to) {
           legend.title = element_text(face = "bold"), 
           strip.background = element_rect(fill = "black"), 
           strip.text = element_text(face = "bold", color = "white")) + 
-    labs(x = roadmap_label,
-         y = "Validated Allostatic Load Index\nComponent (from Chart Review)") 
+    labs(x = "Validated Allostatic Load Index\nComponent (from Chart Review)", 
+         y = roadmap_label,) 
   ggsave(filename = save_to[2],
          device = "png", width = 8, height = 4, units = "in")
 }
