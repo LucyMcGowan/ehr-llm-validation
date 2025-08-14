@@ -71,7 +71,7 @@ all_data |>
         strip.text = element_text(face = "bold", color = "white")) + 
   labs(x = "Unvalidated Allostatic Load Index\nComponent (from the EHR)",
        y = "Validated Allostatic Load Index\nComponent (from Chart Review)") 
-ggsave(filename = "~/Documents/ehr-llm-validation/figures/chart_vs_ehr_heatmap.png",
+ggsave(filename = "~/Documents/ehr-llm-validation/figures/llm_nocontext_vs_ehr_heatmap.png",
        device = "png", width = 8, height = 4, units = "in")
 
 ## Calculate error rates and data recovery (EHR + ICD vs. Chart Review)
