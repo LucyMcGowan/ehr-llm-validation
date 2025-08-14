@@ -112,10 +112,10 @@ make_heatmaps = function(data_path, roadmap_label, save_to, ehr_vs_chart = FALSE
     ## Plot heatmap of ALI_COMPONENT vs. CHART_ALI_COMPONENT
     ### Create dataframe of all combinations so that the geom_tile() will be complete
     all_combo = expand.grid(ALI_COMPONENT = c("Yes", "No", "Missing"), 
-                            SUPP_ALI_COMPONENT = c("Yes", "No", "Missing"))
+                            CHART_ALI_COMPONENT = c("Yes", "No", "Missing"))
     all_data |> 
       filter(PAT_MRN_ID %in% val_pat_id) |> ### Susbet to patients undergoing chart review
-      group_by(ALI_COMPONENT, SUPP_ALI_COMPONENT) |> 
+      group_by(ALI_COMPONENT, CHART_ALI_COMPONENT) |> 
       summarize(num = n()) |>
       full_join(all_combo) |> 
       mutate(num = if_else(condition = is.na(num),

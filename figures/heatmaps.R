@@ -5,7 +5,9 @@ source("figures/make_heatmaps.R")
 make_heatmaps(data_path = "~/Documents/Allostatic_load_audits/ICD-Codes/all_ali_dat_w_icd.csv", 
               roadmap_label = "Augmented Allostatic Load Index\nComponent (Original Roadmap)", 
               save_to = c("~/Documents/ehr-llm-validation/figures/orig_vs_ehr_heatmap.png", 
-                          "~/Documents/ehr-llm-validation/figures/chart_vs_orig_heatmap.png"))
+                          "~/Documents/ehr-llm-validation/figures/chart_vs_orig_heatmap.png", 
+                          "~/Documents/ehr-llm-validation/figures/chart_vs_ehr_heatmap.png"), 
+              ehr_vs_chart = TRUE)
 
 # Make plots for LLMs (without context) roadmap
 make_heatmaps(data_path = "~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_nocontext_validated.csv", 
