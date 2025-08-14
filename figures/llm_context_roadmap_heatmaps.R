@@ -13,13 +13,13 @@ library(stringr) ## To wrap plot titles/text
 # Define colors
 paper_colors = c("#ff99ff", "#787ff6", "#8bdddb", "#7dd5f6", "#ffbd59")
 
-# Load data
-## ALI components before and after validation (waves separately)
+# Load data, contains: 
+## Unvalidated ALI components (original extracted EHR data) for all 1000 patients -- "ALI_COMPONENT"
+## Unvalidated ALI components augmented using LLMs (with context) audit roadmap for all 1000 patients -- SUPP_ALI_COMPONENT
+## Validated ALI components (chart review) for only 100 patients -- CHART_ALI_COMPONENT
 all_data = read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_validated.csv") |> 
-  select(PAT_MRN_ID, Variable_Name, ALI_COMPONENT, SUPP_ALI_COMPONENT, CHART_ALI_COMPONENT) 
-
-## Merge validated + unvalidated 
-all_data = all_data |> 
+  select(PAT_MRN_ID, Variable_Name, ALI_COMPONENT, SUPP_ALI_COMPONENT, CHART_ALI_COMPONENT) |>
+  ### Make the factor labels prettier for plots 
   mutate(SUPP_ALI_COMPONENT = factor(x = SUPP_ALI_COMPONENT, 
                                      levels = c(1, 0, NA), 
                                      labels = c("Yes", "No", "Missing"), exclude = NULL),
