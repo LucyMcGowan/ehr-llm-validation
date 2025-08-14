@@ -5,3 +5,5 @@
 .DS_Store
 .quarto
 *patient_data
+
+scripts/gemini_key.R
