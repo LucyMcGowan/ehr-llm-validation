@@ -18,8 +18,26 @@ pat_dx = read.csv("~/Documents/Allostatic_load_audits/Raw_Data/dx_2022-09-29.csv
 pat_dx = pat_dx |> 
   left_join(y = icd10)
 
-# Read in audit roadmap 
-roadmap = read.csv("~/Documents/Allostatic_load_audits/Audit_Protocol/audit_roadmap.csv") |> 
+# Read in audit roadmaps
+
+## Original roadmap
+roadmap = read.csv(here::here("data-raw/audit_roadmap.csv")) |> 
+  dplyr::select(Variable_Name, If_Missing_Search_For) |> 
+  separate_longer_delim(cols = If_Missing_Search_For, delim = ";") |> ## Create separate rows for each variable, keyword combo
+  mutate(If_Missing_Search_For = toupper(If_Missing_Search_For), ## Convert to all CAPS for easier search 
+         If_Missing_Search_For = str_trim(string = If_Missing_Search_For), ## Trim whitespace 
+         If_Missing_Search_For = str_replace_all(If_Missing_Search_For, "\\s+", ".*")) 
+
+## LLM roadmap with context
+roadmap_llm_context = read.csv(here::here("data-raw/llm_context_roadmap.csv")) |> 
+  dplyr::select(Variable_Name, If_Missing_Search_For) |> 
+  separate_longer_delim(cols = If_Missing_Search_For, delim = ";") |> ## Create separate rows for each variable, keyword combo
+  mutate(If_Missing_Search_For = toupper(If_Missing_Search_For), ## Convert to all CAPS for easier search 
+         If_Missing_Search_For = str_trim(string = If_Missing_Search_For), ## Trim whitespace 
+         If_Missing_Search_For = str_replace_all(If_Missing_Search_For, "\\s+", ".*")) 
+
+## LLM roadmap no context
+roadmap_llm_nocontext = read.csv(here::here("data-raw/llm_nocontext_roadmap.csv")) |> 
   dplyr::select(Variable_Name, If_Missing_Search_For) |> 
   separate_longer_delim(cols = If_Missing_Search_For, delim = ";") |> ## Create separate rows for each variable, keyword combo
   mutate(If_Missing_Search_For = toupper(If_Missing_Search_For), ## Convert to all CAPS for easier search 
@@ -41,12 +59,36 @@ matches = dx_uq |>
     .groups = "drop"
   )
 
+matches_llm_context = dx_uq |>
+    cross_join(roadmap_llm_context) |>
+    filter(str_detect(DX_DESC, regex(If_Missing_Search_For, ignore_case = TRUE))) |>
+    group_by(Variable_Name, DX_CODE, DX_DESC) |>
+    summarise(
+      matched_terms_llm_context = str_trim(paste(If_Missing_Search_For, collapse = "; ")),
+      .groups = "drop"
+    )
+
+    matches_llm_nocontext = dx_uq |>
+      cross_join(roadmap_llm_context) |>
+      filter(str_detect(DX_DESC, regex(If_Missing_Search_For, ignore_case = TRUE))) |>
+      group_by(Variable_Name, DX_CODE, DX_DESC) |>
+      summarise(
+        matched_terms_llm_nocontext = str_trim(paste(If_Missing_Search_For, collapse = "; ")),
+        .groups = "drop"
+      )
+
 # Merge crosswalk into patient diagnoses and create indicator of matched terms 
 pat_dx_flags = pat_dx |>
   left_join(matches, by = c("DX_CODE", "DX_DESC")) |>
+  left_join(matches_llm_context, by = c("DX_CODE", "DX_DESC")) |>
+  left_join(matches_llm_nocontext, by = c("DX_CODE", "DX_DESC")) |>
   mutate(
     has_match = !is.na(matched_terms),
-    matched_terms = str_trim(replace_na(matched_terms, ""))
+    matched_terms = str_trim(replace_na(matched_terms, "")),
+    has_match_llm_context = !is.na(matched_terms_llm_context),
+    matched_terms_llm_context = str_trim(replace_na(matched_terms_llm_context, "")),
+    has_match_llm_nocontext = !is.na(matched_terms_llm_nocontext),
+    matched_terms_llm_nocontext = str_trim(replace_na(matched_terms_llm_nocontext, "")))
   ) 
 
 # Check the first few rows of matches -- Looks great!  
@@ -57,5 +99,14 @@ pat_dx_flags |>
 # Save 
 pat_dx_flags |> 
   filter(has_match) |> 
-  write.csv("~/Documents/Allostatic_load_audits/ICD-Codes/dx_2022-09-29_w_icd.csv", 
+  write.csv(here::here("data-raw/patient_data/roadmap_validated.csv"), 
             row.names = FALSE)
+pat_dx_flags |> 
+  filter(has_match_llm_context) |> 
+  write.csv(here::here("data-raw/patient_data/roadmap_llm_context_validated.csv"), 
+            row.names = FALSE)
+pat_dx_flags |> 
+  filter(has_match_llm_nocontext) |> 
+  write.csv(here::here("data-raw/patient_data/roadmap_llm_nocontext_validated.csv"), 
+            row.names = FALSE)
+
