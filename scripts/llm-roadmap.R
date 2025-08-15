@@ -7,10 +7,10 @@ roadmap <- readr::read_csv(here::here("data-raw/audit_roadmap.csv"))
 
 c <- chat_google_gemini()
 
-make_data <- function(creat_c, bmi, sbp, dbp, a1c, chol, trig, crp, hcst, df_name) {
+make_data <- function(creat_c, alb, bmi, sbp, dbp, a1c, chol, trig, crp, hcst, df_name) {
   df <- data.frame(
-    Variable_Name = c("CREAT_C", "BMI", "BP_SYSTOLIC", "BP_DIASTOLIC", "A1C", "CHOL", "TRIG", "CRP", "HCST"),
-    If_Missing_Search_For = c(creat_c, bmi, sbp, dbp, a1c, chol, trig, crp, hcst)
+    Variable_Name = c("CREAT_C", "ALB", "BMI", "BP_SYSTOLIC", "BP_DIASTOLIC", "A1C", "CHOL", "TRIG", "CRP", "HCST"),
+    If_Missing_Search_For = c(creat_c, alb, bmi, sbp, dbp, a1c, chol, trig, crp, hcst)
   )
   assign(df_name, df, envir = .GlobalEnv)
 }
@@ -37,6 +37,7 @@ tool_data <- tool(
   description = "Create a data frame with text ICD Description search terms separated by ; for ICD descriptions to match diagnoses when missing from chart review",
   arguments = list(
     creat_c = type_string("Search terms for ICD Text Descriptions to detect renal failure, separated by a semicolon"),
+    alb = type_string("Search terms for ICD Text Descriptions to detect serum albumin, separated by a semicolon"),
     bmi = type_string("Search terms for ICD Text Descriptions to detect obesity, separated by a semicolon"),
     sbp = type_string("Search terms for ICD Text Descriptions to detect hypertension, separated by a semicolon"),
     dbp = type_string("Search terms for ICD Text Descriptions to detect hypertension, separated by a semicolon"),
