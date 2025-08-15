@@ -4,8 +4,8 @@ Labs,ALB,Serum albumin,≥3.5,
 Vitals,BMI,BMI,>30,Obesity; morbid obesity; Grade I obesity; Grade II obesity; Grade III obesity
 Vitals,BP_SYSTOLIC,SBP,>140,Hypertension 
 Vitals,BP_DIASTOLIC,DBP,>90,Hypertension 
-Labs,A1C,HbA1c,≥6.5,"Diabetes, impaired glycemic control"
+Labs,A1C,HbA1c,≥6.5,Diabetes; impaired glycemic control
 Labs,CHOL,Total cholesterol,≥200,Hypercholesterolemia 
 Labs,TRIG,Trigylcerides,≥150,Hypertriglyceridemia 
-Labs,CRP,C-reactive protein,≥10,"Sepsis, infection, autoimmune inflammatory syndrome"
+Labs,CRP,C-reactive protein,≥10,Sepsis; infection; autoimmune inflammatory syndrome
 Labs,HCST,Homocysteine,>50,Hyperhomocysteinemia; vitamin deficiency
