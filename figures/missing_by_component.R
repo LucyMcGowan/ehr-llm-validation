@@ -2,6 +2,7 @@
 library(tidyr) ## to unpivot data
 library(dplyr) ## for data wrangling
 library(ggplot2) ## for pretty plots
+library(ggpattern) ## for patterned bars
 
 # Define colors 
 cols = c("#ff99ff", "#8bdddb", "#787ff6", "#ffbd59", "#7dd5f6")
@@ -157,17 +158,29 @@ num_miss |>
                                       "Chart Review Validation", 
                                       "Augmented (Original Roadmap)", 
                                       "Augmented (LLMs w/o Context Roadmap)",
-                                      "Augmented (LLMs w/ Context Roadmap)"))) |> 
+                                      "Augmented (LLMs w/ Context Roadmap)")), 
+         CHART_REVIEW = factor(x = DATA == "Chart Review Validation", 
+                               levels = c(TRUE, FALSE), 
+                               labels = c("Chart Review", "Not Chart Review"))) |> 
   ggplot(aes(x = Variable_Name, 
              y = NUM_MISSING, 
-             fill = DATA)) + 
-  geom_bar(stat = "identity", 
-           position = "dodge", 
-           color = "black") + 
+             fill = DATA, 
+             pattern = CHART_REVIEW)) + 
+  # geom_bar(stat = "identity", 
+  #          position = "dodge", 
+  #          color = "black") + 
   geom_text(aes(label=NUM_MISSING), 
             vjust = -1, 
             size = 3, 
             position = position_dodge(width = 1)) + 
+  geom_bar_pattern(stat = "identity", 
+                   position = position_dodge(preserve = "single"),
+                   color = "black", 
+                   pattern_fill = "black",
+                   pattern_angle = 45,
+                   pattern_density = 0.1,
+                   pattern_spacing = 0.025,
+                   pattern_key_scale_factor = 0.6) + 
   facet_wrap(~FAC_DATA) + 
   theme_minimal(base_size = 14) + 
   labs(x = "Allostatic Load Index Component", 
@@ -184,7 +197,8 @@ num_miss |>
         strip.text = element_text(color = "white")) + 
   scale_fill_manual(values = cols, guide = "none") + 
   scale_y_continuous(expand = expansion(mult = c(0, 0.1))) + 
-  scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 8)) 
+  scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 8)) + 
+  scale_pattern_discrete(guide = "none")
 
 ## Save it 
 ggsave(filename = "~/Documents/ehr-llm-validation/figures/missing_by_component_faceted_sidebyside_chartreview.png", 

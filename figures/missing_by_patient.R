@@ -139,12 +139,16 @@ num_miss |>
                                   "Chart Review Validation", 
                                   "Augmented (Original Roadmap)", 
                                   "Augmented (LLMs w/o Context Roadmap)",
-                                  "Augmented (LLMs w/ Context Roadmap)"))) |> 
-  group_by(FAC_DATA, DATA, NUM_MISSING) |> 
+                                  "Augmented (LLMs w/ Context Roadmap)")), 
+         CHART_REVIEW = factor(x = DATA == "Chart Review Validation", 
+                               levels = c(TRUE, FALSE), 
+                               labels = c("Chart Review", "Not Chart Review"))) |> 
+  group_by(CHART_REVIEW, FAC_DATA, DATA, NUM_MISSING) |> 
   summarize(n = n()) |> 
   ggplot(aes(x = NUM_MISSING, 
              y = n, 
-             fill = DATA)) + 
+             fill = DATA, 
+             pattern = CHART_REVIEW)) + 
   geom_bar(stat = "identity", 
            position = "dodge", 
            color = "black") + 
@@ -152,6 +156,14 @@ num_miss |>
             vjust = -1, 
             size = 3, 
             position = position_dodge(width = 1)) + 
+  geom_bar_pattern(stat = "identity", 
+                   position = position_dodge(preserve = "single"),
+                   color = "black", 
+                   pattern_fill = "black",
+                   pattern_angle = 45,
+                   pattern_density = 0.1,
+                   pattern_spacing = 0.025,
+                   pattern_key_scale_factor = 0.6) + 
   facet_wrap(~FAC_DATA) + 
   scale_fill_manual(values = cols, guide = "none") + 
   theme_minimal(base_size = 14) + 
@@ -168,7 +180,8 @@ num_miss |>
         strip.background = element_rect(fill = "black"), 
         strip.text = element_text(color = "white")) + 
   scale_y_continuous(expand = expansion(mult = c(0, 0.1))) + 
-  scale_x_continuous(breaks = 0:10)
+  scale_x_continuous(breaks = 0:10) + 
+  scale_pattern_discrete(guide = "none")
 
 ## Save it 
 ggsave(filename = "~/Documents/ehr-llm-validation/figures/missing_by_patient_faceted_sidebyside_chartreview.png", 
