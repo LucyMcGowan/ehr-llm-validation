@@ -69,7 +69,7 @@ matches_llm_context = dx_uq |>
     )
 
 matches_llm_nocontext = dx_uq |>
-      cross_join(roadmap_llm_context) |>
+      cross_join(roadmap_llm_nocontext) |>
       filter(str_detect(DX_DESC, regex(If_Missing_Search_For, ignore_case = TRUE))) |>
       group_by(Variable_Name, DX_CODE, DX_DESC) |>
       summarise(
