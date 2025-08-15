@@ -2,6 +2,7 @@
 library(tidyr) ## to unpivot data
 library(dplyr) ## for data wrangling
 library(ggplot2) ## for pretty plots
+library(ggpattern) ## for patterned bars 
 
 # Define colors 
 cols = c("#ff99ff", "#8bdddb", "#787ff6", "#ffbd59", "#7dd5f6")
@@ -15,7 +16,7 @@ all_data = read.csv("~/Documents/Allostatic_load_audits/ICD-Codes/all_ali_dat_w_
   select(PAT_MRN_ID, Variable_Name, ALI_COMPONENT, SUPP_ALI_COMPONENT, CHART_ALI_COMPONENT) |> 
   rename(ORIG_ALI_COMPONENT = SUPP_ALI_COMPONENT) |> 
   left_join(
-    read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_nocontext_validated.csv") |> 
+    read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_nocontext_roadmap.csv") |> 
       mutate(CHART_ALI_COMPONENT = if_else(condition = !is.na(ALI_COMPONENT) & is.na(CHART_ALI_COMPONENT), 
                                            true = ALI_COMPONENT, 
                                            false = CHART_ALI_COMPONENT)) |> 
@@ -23,7 +24,7 @@ all_data = read.csv("~/Documents/Allostatic_load_audits/ICD-Codes/all_ali_dat_w_
       rename(LLM_ALI_COMPONENT = SUPP_ALI_COMPONENT)
   ) |> 
   left_join(
-    read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_validated.csv") |> 
+    read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_roadmap.csv") |> 
       mutate(CHART_ALI_COMPONENT = if_else(condition = !is.na(ALI_COMPONENT) & is.na(CHART_ALI_COMPONENT), 
                                            true = ALI_COMPONENT, 
                                            false = CHART_ALI_COMPONENT)) |> 
