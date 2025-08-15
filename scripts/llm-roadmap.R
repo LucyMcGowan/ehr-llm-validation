@@ -118,8 +118,13 @@ c_context$chat(paste("Here's an a data frame that content matter experts came up
              "Please propose an exhaustive list of terms that will be used to search ICD Descriptions to identify each of the diagnoses and create a data frame for each. I want you to repeat this process 20 times, creating a new dataframe each time with each having a unique name starting with `df_context`. Each time be sure to make as exhaustive a list as possible but they can vary.",
              sep = "\n\n"))
 
-dfs <- paste0("df_context_", 1:11)
+dfs <- paste0("df_context_", 1:20)
 save(list = dfs, file = here::here("data-raw/context-llm.rda"))
 
 #readr::write_csv(df_context, here::here("data-raw/llm_context_roadmap.csv"))
 #readr::write_csv(df_nocontext, here::here("data-raw/llm_nocontext_roadmap.csv"))
+
+## Combine datasets ----
+df_list <- mget(dfs)
+plot_bars("BP_SYSTOLIC")
+plot_bars("CRP")
