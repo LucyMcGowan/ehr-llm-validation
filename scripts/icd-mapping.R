@@ -80,8 +80,8 @@ matches_llm_nocontext = dx_uq |>
 # Merge crosswalk into patient diagnoses and create indicator of matched terms 
 pat_dx_flags = pat_dx |>
   left_join(matches, by = c("DX_CODE", "DX_DESC")) |>
-  left_join(matches_llm_context, by = c("DX_CODE", "DX_DESC")) |>
-  left_join(matches_llm_nocontext, by = c("DX_CODE", "DX_DESC")) |>
+  left_join(matches_llm_context, by = c("Variable_Name", "DX_CODE", "DX_DESC")) |>
+  left_join(matches_llm_nocontext, by = c("Variable_Name", "DX_CODE", "DX_DESC")) |>
   mutate(
     has_match = !is.na(matched_terms),
     matched_terms = str_trim(replace_na(matched_terms, "")),
@@ -99,15 +99,15 @@ pat_dx_flags |>
 # Save 
 pat_dx_flags |> 
   filter(has_match) |> 
-  write.csv(here::here("data-raw/patient_data/roadmap_validated.csv"), 
+  write.csv(here::here("data-raw/patient_data/dx_original_roadmap.csv"), 
             row.names = FALSE)
 pat_dx_flags |> 
   filter(has_match_llm_context) |> 
-  write.csv(here::here("data-raw/patient_data/roadmap_llm_context_validated.csv"), 
+  write.csv(here::here("data-raw/patient_data/dx_llm_context_roadmap.csv"), 
             row.names = FALSE)
 pat_dx_flags |> 
   filter(has_match_llm_nocontext) |> 
-  write.csv(here::here("data-raw/patient_data/roadmap_llm_nocontext_validated.csv"), 
+  write.csv(here::here("data-raw/patient_data/dx_llm_nocontext_roadmap.csv"), 
             row.names = FALSE)
 
 
