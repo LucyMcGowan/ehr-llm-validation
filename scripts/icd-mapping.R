@@ -29,7 +29,7 @@ roadmap = read.csv(here::here("data-raw/audit_roadmap.csv")) |>
          If_Missing_Search_For = str_replace_all(If_Missing_Search_For, "\\s+", ".*")) 
 
 ## LLM roadmap with context
-roadmap_llm_context = read.csv(here::here("data-raw/llm_context_roadmap.csv")) |> 
+roadmap_llm_context = read.csv(here::here("data-raw/llm_context_superset_roadmap.csv")) |> 
   dplyr::select(Variable_Name, If_Missing_Search_For) |> 
   separate_longer_delim(cols = If_Missing_Search_For, delim = ";") |> ## Create separate rows for each variable, keyword combo
   mutate(If_Missing_Search_For = toupper(If_Missing_Search_For), ## Convert to all CAPS for easier search 
@@ -37,7 +37,7 @@ roadmap_llm_context = read.csv(here::here("data-raw/llm_context_roadmap.csv")) |
          If_Missing_Search_For = str_replace_all(If_Missing_Search_For, "\\s+", ".*")) 
 
 ## LLM roadmap no context
-roadmap_llm_nocontext = read.csv(here::here("data-raw/llm_nocontext_roadmap.csv")) |> 
+roadmap_llm_nocontext = read.csv(here::here("data-raw/llm_nocontext_superset_roadmap.csv")) |> 
   dplyr::select(Variable_Name, If_Missing_Search_For) |> 
   separate_longer_delim(cols = If_Missing_Search_For, delim = ";") |> ## Create separate rows for each variable, keyword combo
   mutate(If_Missing_Search_For = toupper(If_Missing_Search_For), ## Convert to all CAPS for easier search 
@@ -103,11 +103,11 @@ pat_dx_flags |>
             row.names = FALSE)
 pat_dx_flags |> 
   filter(has_match_llm_context) |> 
-  write.csv(here::here("data-raw/patient_data/dx_llm_context_roadmap.csv"), 
+  write.csv(here::here("data-raw/patient_data/dx_llm_context_superset_roadmap.csv"), 
             row.names = FALSE)
 pat_dx_flags |> 
   filter(has_match_llm_nocontext) |> 
-  write.csv(here::here("data-raw/patient_data/dx_llm_nocontext_roadmap.csv"), 
+  write.csv(here::here("data-raw/patient_data/dx_llm_nocontext_superset_roadmap.csv"), 
             row.names = FALSE)
 
 
