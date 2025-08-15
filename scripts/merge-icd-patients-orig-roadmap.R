@@ -13,7 +13,7 @@ ehr_ali_long = ehr_ali |>
 nrow(ehr_ali_long) ## Check: 10,000 rows (one per patient per component)
 
 # Merge in the ICD mapping
-icd_dx = read.csv("~/Documents/Allostatic_load_audits/ICD-Codes/dx_2022-09-29_w_icd.csv") |> 
+icd_dx = read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/dx_original_roadmap.csv") |> 
   dplyr::select(PAT_MRN_ID, DX_CODE, DX_DESC, Variable_Name, matched_terms) |> 
   unique() |> 
   group_by(PAT_MRN_ID, Variable_Name) |> ## Some people had multiple ICD codes per component
@@ -42,7 +42,6 @@ chart_reviews = read.csv("~/Documents/Allostatic_load_audits/ali_dat_audit1.csv"
     read.csv("~/Documents/Allostatic_load_audits/ali_dat_audit2.csv")
   )
 
-
 ## Make a long version so we can compare to ICD-supplemented 
 chart_reviews_long = chart_reviews |> 
   pivot_longer(cols = A1C:TRIG, names_to = "COMPONENT", values_to = "Value") |> 
@@ -59,5 +58,5 @@ all_dat = ehr_ali_long |>
 nrow(ehr_ali_long) ## Notice: Still 10,000 rows after join! One per patient per component. 
 
 all_dat |> 
-  write.csv("~/Documents/Allostatic_load_audits/ICD-Codes/all_ali_dat_w_icd.csv", 
+  write.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_original_roadmap.csv", 
             row.names = FALSE)
