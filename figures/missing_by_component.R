@@ -97,7 +97,7 @@ ggsave(filename = "~/Documents/ehr-llm-validation/figures/missing_by_component.p
 bar_plot + 
   facet_wrap(~DATA) + 
   theme(strip.background = element_rect(fill = "black"), 
-        strip.text = element_text(color = "white")) + 
+        strip.text = element_text(color = "white", face = "bold")) + 
   scale_fill_manual(values = cols, guide = "none") 
 
 ## Save it 
@@ -194,7 +194,7 @@ num_miss |>
         legend.justification = "right", 
         legend.background = element_rect(fill = "white"), 
         strip.background = element_rect(fill = "black"), 
-        strip.text = element_text(color = "white")) + 
+        strip.text = element_text(color = "white", face = "bold")) + 
   scale_fill_manual(values = cols, guide = "none") + 
   scale_y_continuous(expand = expansion(mult = c(0, 0.1))) + 
   scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 8)) + 
