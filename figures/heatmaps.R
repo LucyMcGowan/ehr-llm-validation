@@ -1,5 +1,5 @@
 # Source plot-making function
-source("figures/make_heatmaps.R")
+source("~/Documents/ehr-llm-validation/figures/make_heatmaps.R")
 
 # Make plots for original roadmap
 make_heatmaps(data_path = "~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_original_roadmap.csv", 
@@ -20,3 +20,4 @@ make_heatmaps(data_path = "~/Documents/ehr-llm-validation/data-raw/patient_data/
               roadmap_label = "Augmented Allostatic Load Index\nComponent (LLMs w/ Context Roadmap)", 
               save_to = c("~/Documents/ehr-llm-validation/figures/llm_context_vs_ehr_heatmap.png", 
                           "~/Documents/ehr-llm-validation/figures/chart_vs_llm_context_heatmap.png"))
+
