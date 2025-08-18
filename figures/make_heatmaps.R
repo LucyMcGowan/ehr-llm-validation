@@ -82,7 +82,7 @@ make_heatmaps = function(data_path, roadmap_label, save_to, ehr_vs_chart = FALSE
     mutate(num = if_else(condition = is.na(num),
                          true = 0, 
                          false = num)) |> 
-    ggplot(aes(x = SUPP_ALI_COMPONENT, y = CHART_ALI_COMPONENT, fill = num)) +
+    ggplot(aes(x = CHART_ALI_COMPONENT, y = SUPP_ALI_COMPONENT, fill = num)) +
     geom_tile(color = "black",
               lwd = 0.5,
               linetype = 1) + 

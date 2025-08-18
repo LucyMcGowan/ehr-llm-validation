@@ -1,3 +1,8 @@
+# Make one data frame of the superset of LLM roadmaps 
+## Load separate dataframes for each LLM roadmap 
+load("~/Documents/ehr-llm-validation/data-raw/no_context-llm.rda")
+roadmap <- read.csv("~/Documents/Allostatic_load_audits/Audit_Protocol/audit_roadmap.csv")
+dfs <- paste0("df_nocontext_", 1:20)
 df_list <- mget(dfs)
 
 extract_terms <- function(df, i, variable_name = "BMI") {
@@ -36,6 +41,12 @@ plot_bars <- function(variable_name) {
 
 plot_bars("BP_SYSTOLIC")
 
+
+all_terms <- do.call(rbind, Map(extract_terms, df_list, 1:20, 
+                                "BP_SYSTOLIC"))
+
+term_matrix <- all_terms |>
+  mutate(present = !is.na(df))
 ggplot(term_matrix, aes(x = df, y = term)) +
   geom_point(aes(color = present)) +
   theme_minimal() 
