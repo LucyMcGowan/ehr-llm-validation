@@ -8,6 +8,9 @@ val_pat_id = read.csv("~/Documents/Allostatic_load_audits/all_ali_dat.csv") |>
 temp = read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_nocontext_roadmap.csv") |> 
   filter(PAT_MRN_ID %in% val_pat_id)
 
+temp = read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_roadmap.csv") |> 
+  filter(PAT_MRN_ID %in% val_pat_id)
+
 ## Check: There are 13 components that chart review recovered but the roadmap didn't
 temp |> 
   filter(CHART_ALI_COMPONENT == 1, is.na(SUPP_ALI_COMPONENT))
@@ -17,7 +20,12 @@ temp |>
 
 ## Check: There are 16 components that the roadmap recovered but chart review didn't
 temp |> 
-  filter(is.na(CHART_ALI_COMPONENT), SUPP_ALI_COMPONENT == 1)
+  filter(is.na(CHART_ALI_COMPONENT), SUPP_ALI_COMPONENT == 1) |> 
+  head()
+
+temp |> 
+  filter(is.na(CHART_ALI_COMPONENT), !is.na(SUPP_ALI_COMPONENT))
+
 ### But... 5 of these are because roadmap inherited the values from the EHR, which didn't agree with chart review 
 temp |> 
   filter(is.na(CHART_ALI_COMPONENT), SUPP_ALI_COMPONENT == 1, is.na(ALI_COMPONENT))
