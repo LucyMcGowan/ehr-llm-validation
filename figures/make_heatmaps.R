@@ -21,14 +21,17 @@ make_heatmaps = function(data_path, roadmap_label, save_to, ehr_vs_chart = FALSE
   ## Validated ALI components (chart review) for only 100 patients -- CHART_ALI_COMPONENT
   all_data = read.csv(data_path) |> 
     ### Keep only the columns we need 
-    select(PAT_MRN_ID, Variable_Name, ALI_COMPONENT, SUPP_ALI_COMPONENT, CHART_ALI_COMPONENT) |> 
+    select(PAT_MRN_ID, Variable_Name, ALI_COMPONENT, SUPP_ALI_COMPONENT, CHART_ALI_COMPONENT, COMP_FLAG) |> 
     ### Make the factor labels prettier for plots 
     mutate(SUPP_ALI_COMPONENT = factor(x = SUPP_ALI_COMPONENT,
                                        levels = c(1, 0, NA), 
                                        labels = c("Yes", "No", "Missing"), exclude = NULL),
+           #### Check for chart review components where values out of study period were given 
+           CHART_ALI_COMPONENT = if_else(condition = !is.na(COMP_FLAG) & stringr::str_detect(string = COMP_FLAG, pattern = Variable_Name), 
+                                         true = -1, false = CHART_ALI_COMPONENT),
            CHART_ALI_COMPONENT = factor(x = CHART_ALI_COMPONENT, 
-                                        levels = c(1, 0, NA), 
-                                        labels = c("Yes", "No", "Missing"), exclude = NULL), 
+                                        levels = c(1, 0, NA, -1), 
+                                        labels = c("Yes", "No", "Missing", "Value Beyond Study Period"), exclude = NULL), 
            ALI_COMPONENT = factor(x = ALI_COMPONENT, 
                                   levels = c(1, 0, NA), 
                                   labels = c("Yes", "No", "Missing"), exclude = NULL))
