@@ -37,10 +37,10 @@ ehr_ali_long = ehr_ali_long |>
          SUPP_ALI = SUPP_ALI_NUM / SUPP_ALI_DENOM) ## ... and final score using the ICD-supplemented components.
 
 # Read in all-waves validation data 
-chart_reviews = read.csv("~/Documents/Allostatic_load_audits/ali_dat_audit1.csv") |> 
-  bind_rows(
-    read.csv("~/Documents/Allostatic_load_audits/ali_dat_audit2.csv")
-  )
+source("~/Documents/Allostatic_load_audits/ali_dat_audit1.R") ## Pilot + Wave I
+source("~/Documents/Allostatic_load_audits/ali_dat_audit2.R") ## Wave II
+chart_reviews = wave1_data |> 
+  bind_rows(wave2_data)
 
 ## Make a long version so we can compare to ICD-supplemented 
 chart_reviews_long = chart_reviews |> 
