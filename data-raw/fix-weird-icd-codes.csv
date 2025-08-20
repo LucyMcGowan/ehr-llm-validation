@@ -1,0 +1,42 @@
+﻿OLD_DX_CODE,DX_CODE,DX_DESC
+B373,B373,Candidiasis of vulva and vagina
+D680,D6800,"Von Willebrand disease, unspecified"
+E668,E668,Other obesity
+E7801,E78010,Homozygous familial hypercholesterolemia [HoFH]
+E872,E8720,"Acidosis, unspecified"
+E8881,E8881,Metabolic syndrome and other insulin resistance
+F0281,F0281,"Dementia in other diseases classified elsewhere, unspecified severity"
+F502,F5020,"Bulimia nervosa, unspecified"
+F5081,F50810,"Binge eating disorder, mild"
+G35,G35,Multiple sclerosis
+G908,G908,Other disorders of autonomic nervous system
+H34832,H348320,"Tributary (branch) retinal vein occlusion, left eye, with macular edema"
+I208,I208,Other forms of angina pectoris
+I248,I248,Other forms of acute ischemic heart disease
+I471,I4710,"Supraventricular tachycardia, unspecified"
+I472,I4720,"Ventricular tachycardia, unspecified"
+I712,I7120,"Thoracic aortic aneurysm, without rupture, unspecified"
+IMO0001,,
+IMO0002,,
+L298,L2989,Other pruritus
+M5136,M51360,"Other intervertebral disc degeneration, lumbar region with discogenic back pain only"
+M5137,M51370,"Other intervertebral disc degeneration, lumbosacral region with discogenic back pain only"
+M545,M5450,"Low back pain, unspecified"
+M659,M6590,"Unspecified synovitis and tenosynovitis, unspecified site"
+N141,N141,"Nephropathy induced by other drugs, medicaments and biological substances"
+N183,N1830,"Chronic kidney disease, stage 3 unspecified"
+N800,N8000,"Endometriosis of the uterus, unspecified"
+N801,N801,Endometriosis of ovary
+O9989,O9989,"Other Specified Diseases and Conditions Complicating Pregnancy, Childbirth and the Puerperium"
+R102,R1020,Pelvic and perineal pain unspecified side
+R51,R510,"Headache with orthostatic component, not elsewhere classified"
+R768,R768,Other specified abnormal immunological findings in serum
+S301XXA,S3011XA,"Contusion of abdominal wall, initial encounter"
+S301XXD,S3011XD,"Contusion of abdominal wall, subsequent encounter"
+T781XXA,T781XXA,"Other Adverse Food Reactions, Not Elsewhere Classified [initial Encounter]"
+Z298,Z298,Encounter for other specified prophylactic measures
+Z8371,Z83710,Family history of adenomatous and serrated polyps
+Z86010,Z86010,Personal history of colon polyps
+Z9111,Z91110,Patient's noncompliance with dietary regimen due to financial hardship
+Z9114,Z9114,Patient's other noncompliance with medication regimen
+Z9119,Z9119,Patient's noncompliance with other medical treatment and regimen
