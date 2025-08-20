@@ -79,6 +79,11 @@ roadmap_llm_context = read.csv(here::here(
   mutate(
     If_Missing_Search_For = toupper(If_Missing_Search_For), ## Convert to all CAPS for easier search
     If_Missing_Search_For = str_trim(string = If_Missing_Search_For), ## Trim whitespace
+    If_Missing_Search_For = str_replace_all(
+      If_Missing_Search_For,
+      "[[:punct:]]",
+      ""
+    ), ## Remove punctuation
     If_Missing_Search_For = str_replace_all(If_Missing_Search_For, "\\s+", ".*")
   )
 
@@ -91,6 +96,11 @@ roadmap_llm_nocontext = read.csv(here::here(
   mutate(
     If_Missing_Search_For = toupper(If_Missing_Search_For), ## Convert to all CAPS for easier search
     If_Missing_Search_For = str_trim(string = If_Missing_Search_For), ## Trim whitespace
+    If_Missing_Search_For = str_replace_all(
+      If_Missing_Search_For,
+      "[[:punct:]]",
+      ""
+    ), ## Remove punctuation
     If_Missing_Search_For = str_replace_all(If_Missing_Search_For, "\\s+", ".*")
   )
 
@@ -257,6 +267,7 @@ pat_dx_flags_nocontext |>
 
 
 library(ggplot2)
+paper_colors = c("#ff99ff", "#787ff6", "#8bdddb", "#7dd5f6", "#ffbd59") # Define colors
 plot_data <- pat_dx_flags |>
   summarize(has_match = sum(has_match), not_has_match = n() - has_match) |>
   mutate(variable = "Original Roadmap") |>
@@ -298,11 +309,29 @@ plot_data <- pat_dx_flags |>
         "LLM (No Context) Roadmap",
         "Original Roadmap",
         "LLM (Context) Roadmap"
+      ), 
+      labels = c(
+        "LLM (No Context)",
+        "Original",
+        "LLM (Context)"
       )
-    )
+    ), 
+    value = factor(x = value, 
+                   levels = c("has_match", "not_has_match"), 
+                   labels = c("True", "False"))
   )
 
 ggplot(plot_data, aes(x = variable, y = n, fill = value)) +
   geom_col(position = position_dodge(width = 1)) +
-  geom_text(aes(label = n), position = position_dodge(width = 1)) +
-  theme_minimal()
+  geom_text(aes(label = scales::comma(n)), 
+            position = position_dodge(width = 1)) +
+  xlab("Roadmap") + 
+  ylab("Number of Patient Diagnosis Codes") + 
+  theme_minimal(base_size = 14) + 
+  theme(axis.title = element_text(face = "bold"), 
+        legend.position = "top") + 
+  scale_y_continuous(labels = scales::comma) + 
+  scale_fill_manual(values = paper_colors[c(4, 5)], 
+                    name = "Has Match:")
+ggsave(filename = here::here("figures/count_matched_dx.png"), 
+       width = 7, height = 5, unit = "in")
