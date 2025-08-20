@@ -11,9 +11,7 @@ icd10 = read.csv(here::here("data-raw/icd10cm-codes-2026.csv")) |>
   ) ## Trim whitespace
 
 # Read in patient DX from sample of N = 1000
-pat_dx = read.csv(
-  "~/Documents/Allostatic_load_audits/Raw_Data/dx_2022-09-29.csv"
-) |>
+pat_dx = read.csv(here::here("data-raw/patient_data/dx_2022-09-29.csv")) |>
   mutate(CONTACT_DATE = as.Date(CONTACT_DATE, format = "%m/%d/%y")) |> ## convert the CONTACT_DATE to Date
   filter(CONTACT_DATE <= "2020-03-10") |> ## only keep diagnoses on or before 2020-03-10
   mutate(DX_CODE = sub(pattern = "\\.", replacement = "", x = DX_CODE)) ## Remove periods to merge with icd10
@@ -22,8 +20,38 @@ pat_dx = read.csv(
 pat_dx = pat_dx |>
   left_join(y = icd10)
 
-# Read in audit roadmaps
+## Some ICD codes in the patient DX data didn't map to icd10, so manually recode them
+### Happened for 1438 patients' DX 
+pat_dx |> 
+  filter(is.na(DX_DESC)) |> 
+  nrow()
+### Manual recoding / descriptions 
+icd10_fix = read.csv(here::here("data-raw/fix-weird-icd-codes.csv")) |> 
+  rename(DX_CODE = OLD_DX_CODE, 
+         FIX_DX_CODE = DX_CODE, 
+         FIX_DX_DESC = DX_DESC)
+### Merge into pat_dx
+pat_dx = pat_dx |> 
+  left_join(icd10_fix) |> 
+  mutate(DX_CODE = if_else(condition = is.na(DX_CODE), 
+                           true = FIX_DX_CODE, 
+                           false = DX_CODE), 
+         DX_DESC = if_else(condition = is.na(DX_DESC), 
+                           true = FIX_DX_DESC, 
+                           false = DX_DESC)) |> 
+  select(-FIX_DX_CODE, -FIX_DX_DESC) 
 
+### Now, only left with 51 ICD codes in patient data that don't match ICD 
+pat_dx |> 
+  filter(is.na(DX_DESC)) |> 
+  nrow()
+### And they all seem to be... missing DX_CODE to begin with? 
+pat_dx |> 
+  filter(is.na(DX_DESC)) |> 
+  pull(DX_CODE) |> 
+  table()
+
+# Read in audit roadmaps
 ## Original roadmap
 roadmap = read.csv(here::here("data-raw/audit_roadmap.csv")) |>
   dplyr::select(Variable_Name, If_Missing_Search_For) |>
