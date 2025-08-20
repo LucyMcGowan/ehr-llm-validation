@@ -33,7 +33,7 @@ icd10_fix = read.csv(here::here("data-raw/fix-weird-icd-codes.csv")) |>
 ### Merge into pat_dx
 pat_dx = pat_dx |> 
   left_join(icd10_fix) |> 
-  mutate(DX_CODE = if_else(condition = is.na(DX_CODE), 
+  mutate(DX_CODE = if_else(condition = is.na(DX_DESC), 
                            true = FIX_DX_CODE, 
                            false = DX_CODE), 
          DX_DESC = if_else(condition = is.na(DX_DESC), 
@@ -48,8 +48,7 @@ pat_dx |>
 ### And they all seem to be... missing DX_CODE to begin with? 
 pat_dx |> 
   filter(is.na(DX_DESC)) |> 
-  pull(DX_CODE) |> 
-  table()
+  pull(DX_CODE) 
 
 # Read in audit roadmaps
 ## Original roadmap
@@ -135,24 +134,33 @@ matches_llm_nocontext = dx_uq |>
   )
 
 # Merge crosswalk into patient diagnoses and create indicator of matched terms
+## Original roadmap
 pat_dx_flags = pat_dx |>
   left_join(matches, by = c("DX_CODE", "DX_DESC")) |>
-  left_join(
-    matches_llm_context,
-    by = c("Variable_Name", "DX_CODE", "DX_DESC")
-  ) |>
-  left_join(
-    matches_llm_nocontext,
-    by = c("Variable_Name", "DX_CODE", "DX_DESC")
-  ) |>
   mutate(
     has_match = !is.na(matched_terms),
-    matched_terms = str_trim(replace_na(matched_terms, "")),
+    matched_terms = str_trim(replace_na(matched_terms, ""))
+    )
+## LLM Roadmap (Context)
+pat_dx_flags_llm_context = pat_dx |>
+  left_join(
+    matches_llm_context,
+    by = c("DX_CODE", "DX_DESC")
+  ) |>
+  mutate(
     has_match_llm_context = !is.na(matched_terms_llm_context),
     matched_terms_llm_context = str_trim(replace_na(
       matched_terms_llm_context,
       ""
-    )),
+    ))
+  )
+## LLM Roadmap (Context)
+pat_dx_flags_nocontext = pat_dx |>
+  left_join(
+    matches_llm_nocontext,
+    by = c("DX_CODE", "DX_DESC")
+  ) |>
+  mutate(
     has_match_llm_nocontext = !is.na(matched_terms_llm_nocontext),
     matched_terms_llm_nocontext = str_trim(replace_na(
       matched_terms_llm_nocontext,
@@ -160,43 +168,118 @@ pat_dx_flags = pat_dx |>
     ))
   )
 
+# pat_dx_flags = pat_dx |>
+#   left_join(matches, by = c("DX_CODE", "DX_DESC")) |>
+#   mutate(
+#     has_match = !is.na(matched_terms),
+#     matched_terms = str_trim(replace_na(matched_terms, ""))
+#     ) |>
+#   left_join(
+#     matches_llm_context,
+#     by = c("Variable_Name", "DX_CODE", "DX_DESC")
+#   ) |>
+#   mutate(
+#     has_match_llm_context = !is.na(matched_terms_llm_context),
+#     matched_terms_llm_context = str_trim(replace_na(
+#       matched_terms_llm_context,
+#       ""
+#     ))
+#   ) |>
+#   left_join(
+#     matches_llm_nocontext,
+#     by = c("Variable_Name", "DX_CODE", "DX_DESC")
+#   ) |>
+#   mutate(
+#     has_match_llm_nocontext = !is.na(matched_terms_llm_nocontext),
+#     matched_terms_llm_nocontext = str_trim(replace_na(
+#       matched_terms_llm_nocontext,
+#       ""
+#     ))
+#   )
+
 # Check the first few rows of matches -- Looks great!
 pat_dx_flags |>
   filter(has_match) |>
   head()
 
-# Save
+# Save diagnoses with matches 
 pat_dx_flags |>
   filter(has_match) |>
   write.csv(
     here::here("data-raw/patient_data/dx_original_roadmap.csv"),
     row.names = FALSE
   )
-pat_dx_flags |>
+pat_dx_flags_llm_context |>
   filter(has_match_llm_context) |>
   write.csv(
     here::here("data-raw/patient_data/dx_llm_context_superset_roadmap.csv"),
     row.names = FALSE
   )
-pat_dx_flags |>
+pat_dx_flags_nocontext |>
   filter(has_match_llm_nocontext) |>
   write.csv(
     here::here("data-raw/patient_data/dx_llm_nocontext_superset_roadmap.csv"),
     row.names = FALSE
   )
 
+# Save diagnoses without matches
+pat_dx_flags |>
+  filter(!has_match) |>
+  write.csv(
+    here::here("data-raw/patient_data/dx_original_roadmap_unmatched.csv"),
+    row.names = FALSE
+  )
+pat_dx_flags_llm_context |>
+  filter(!has_match_llm_context) |>
+  write.csv(
+    here::here("data-raw/patient_data/dx_llm_context_superset_roadmap_unmatched.csv"),
+    row.names = FALSE
+  )
+pat_dx_flags_nocontext |>
+  filter(!has_match_llm_nocontext) |>
+  write.csv(
+    here::here("data-raw/patient_data/dx_llm_nocontext_superset_roadmap_unmatched.csv"),
+    row.names = FALSE
+  )
 
-plot_data <- pat_dx_flags |>
-  pivot_longer(
-    cols = c(has_match, has_match_llm_context, has_match_llm_nocontext),
-    names_to = "variable",
-    values_to = "value"
-  ) |>
-  count(variable, value)
 
 library(ggplot2)
+plot_data <- pat_dx_flags |>
+  summarize(has_match = sum(has_match), 
+            not_has_match = n() - has_match) |> 
+  mutate(variable = "Original Roadmap") |> 
+  pivot_longer(cols = has_match:not_has_match, 
+               names_to = "value", 
+               values_to = "n") |> 
+  bind_rows(
+    pat_dx_flags_llm_context |>
+      summarize(has_match = sum(has_match_llm_context), 
+                not_has_match = n() - has_match) |> 
+      mutate(variable = "LLM (Context) Roadmap") |> 
+      pivot_longer(cols = has_match:not_has_match, 
+                   names_to = "value", 
+                   values_to = "n")
+  ) |> 
+  bind_rows(
+    pat_dx_flags_nocontext |>
+      summarize(has_match = sum(has_match_llm_nocontext), 
+                not_has_match = n() - has_match) |> 
+      mutate(variable = "LLM (No Context) Roadmap") |> 
+      pivot_longer(cols = has_match:not_has_match, 
+                   names_to = "value", 
+                   values_to = "n")
+  ) |> 
+  mutate(
+    variable = factor(x = variable, 
+                      levels = c("LLM (No Context) Roadmap", 
+                                 "Original Roadmap", 
+                                 "LLM (Context) Roadmap"))
+  ) 
 
-ggplot(plot_data, aes(x = variable, y = n, fill = value)) +
-  geom_col(position = "dodge") +
-  geom_text(aes(label = n), position = position_dodge()) +
+ggplot(plot_data, 
+       aes(x = variable, 
+           y = n, 
+           fill = value)) +
+  geom_col(position = position_dodge(width = 1)) +
+  geom_text(aes(label = n), position = position_dodge(width = 1)) +
   theme_minimal()
