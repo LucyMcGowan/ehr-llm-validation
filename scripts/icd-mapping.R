@@ -54,6 +54,10 @@ pat_dx |>
   filter(is.na(DX_DESC)) |>
   pull(DX_CODE)
 
+## Exclude any DX with missing ICD codes 
+pat_dx = pat_dx |> 
+  filter(!is.na(DX_CODE))
+
 # Read in audit roadmaps
 ## Original roadmap
 roadmap = read.csv(here::here("data-raw/audit_roadmap.csv")) |>
