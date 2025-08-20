@@ -5,15 +5,18 @@ val_pat_id = read.csv("~/Documents/Allostatic_load_audits/all_ali_dat.csv") |>
   filter(VALIDATED) |> 
   pull(PAT_MRN_ID)
 
-temp = read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_nocontext_roadmap.csv") |> 
-  filter(PAT_MRN_ID %in% val_pat_id)
-
 temp = read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_roadmap.csv") |> 
   filter(PAT_MRN_ID %in% val_pat_id)
 
-## Check: There are 13 components that chart review recovered but the roadmap didn't
+# temp = read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_roadmap.csv") |> 
+#   filter(PAT_MRN_ID %in% val_pat_id)
+
+## Check: There are 25 components that chart review recovered but the roadmap didn't
 temp |> 
-  filter(CHART_ALI_COMPONENT == 1, is.na(SUPP_ALI_COMPONENT))
+  filter(CHART_ALI_COMPONENT == 1, 
+         is.na(SUPP_ALI_COMPONENT)) |> 
+  write.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/weird_cases/found_chart_not_llm_nocontext.csv", 
+            row.names = FALSE)
 ### I looked at PAT_MRN_ID = 700088. For creatinine clearance, the auditors just found missing labs. (Nothing the roadmap can do.)
 #### For homocysteine, auditors noted "folate deficiency, Vit D deficiency." These things are not in the diagnosis codes either. 
 ### Looking at PAT_MRN_ID = 2340961, auditors noted quite a few "acute kidney injuries." I don't see this in diagnosis codes! 
@@ -24,7 +27,9 @@ temp |>
   head()
 
 temp |> 
-  filter(is.na(CHART_ALI_COMPONENT), !is.na(SUPP_ALI_COMPONENT))
+  filter(is.na(CHART_ALI_COMPONENT), SUPP_ALI_COMPONENT == 1, is.na(ALI_COMPONENT)) |> 
+  write.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/weird_cases/found_llm_nocontext_not_chart.csv", 
+            row.names = FALSE)
 
 ### But... 5 of these are because roadmap inherited the values from the EHR, which didn't agree with chart review 
 temp |> 

@@ -4,3 +4,5 @@
 ^air\.toml$
 \.vscode$
 README_files
+^.*\.Rproj$
+^\.Rproj\.user$
