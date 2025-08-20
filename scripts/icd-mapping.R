@@ -21,34 +21,38 @@ pat_dx = pat_dx |>
   left_join(y = icd10)
 
 ## Some ICD codes in the patient DX data didn't map to icd10, so manually recode them
-### Happened for 1438 patients' DX 
-pat_dx |> 
-  filter(is.na(DX_DESC)) |> 
+### Happened for 1438 patients' DX
+pat_dx |>
+  filter(is.na(DX_DESC)) |>
   nrow()
-### Manual recoding / descriptions 
-icd10_fix = read.csv(here::here("data-raw/fix-weird-icd-codes.csv")) |> 
-  rename(DX_CODE = OLD_DX_CODE, 
-         FIX_DX_CODE = DX_CODE, 
-         FIX_DX_DESC = DX_DESC)
+### Manual recoding / descriptions
+icd10_fix = read.csv(here::here("data-raw/fix-weird-icd-codes.csv")) |>
+  rename(DX_CODE = OLD_DX_CODE, FIX_DX_CODE = DX_CODE, FIX_DX_DESC = DX_DESC)
 ### Merge into pat_dx
-pat_dx = pat_dx |> 
-  left_join(icd10_fix) |> 
-  mutate(DX_CODE = if_else(condition = is.na(DX_DESC), 
-                           true = FIX_DX_CODE, 
-                           false = DX_CODE), 
-         DX_DESC = if_else(condition = is.na(DX_DESC), 
-                           true = FIX_DX_DESC, 
-                           false = DX_DESC)) |> 
-  select(-FIX_DX_CODE, -FIX_DX_DESC) 
+pat_dx = pat_dx |>
+  left_join(icd10_fix) |>
+  mutate(
+    DX_CODE = if_else(
+      condition = is.na(DX_DESC),
+      true = FIX_DX_CODE,
+      false = DX_CODE
+    ),
+    DX_DESC = if_else(
+      condition = is.na(DX_DESC),
+      true = FIX_DX_DESC,
+      false = DX_DESC
+    )
+  ) |>
+  select(-FIX_DX_CODE, -FIX_DX_DESC)
 
-### Now, only left with 51 ICD codes in patient data that don't match ICD 
-pat_dx |> 
-  filter(is.na(DX_DESC)) |> 
+### Now, only left with 51 ICD codes in patient data that don't match ICD
+pat_dx |>
+  filter(is.na(DX_DESC)) |>
   nrow()
-### And they all seem to be... missing DX_CODE to begin with? 
-pat_dx |> 
-  filter(is.na(DX_DESC)) |> 
-  pull(DX_CODE) 
+### And they all seem to be... missing DX_CODE to begin with?
+pat_dx |>
+  filter(is.na(DX_DESC)) |>
+  pull(DX_CODE)
 
 # Read in audit roadmaps
 ## Original roadmap
@@ -58,6 +62,11 @@ roadmap = read.csv(here::here("data-raw/audit_roadmap.csv")) |>
   mutate(
     If_Missing_Search_For = toupper(If_Missing_Search_For), ## Convert to all CAPS for easier search
     If_Missing_Search_For = str_trim(string = If_Missing_Search_For), ## Trim whitespace
+    If_Missing_Search_For = str_replace_all(
+      If_Missing_Search_For,
+      "[[:punct:]]",
+      ""
+    ), ## Remove punctuation
     If_Missing_Search_For = str_replace_all(If_Missing_Search_For, "\\s+", ".*")
   )
 
@@ -140,7 +149,7 @@ pat_dx_flags = pat_dx |>
   mutate(
     has_match = !is.na(matched_terms),
     matched_terms = str_trim(replace_na(matched_terms, ""))
-    )
+  )
 ## LLM Roadmap (Context)
 pat_dx_flags_llm_context = pat_dx |>
   left_join(
@@ -202,7 +211,7 @@ pat_dx_flags |>
   filter(has_match) |>
   head()
 
-# Save diagnoses with matches 
+# Save diagnoses with matches
 pat_dx_flags |>
   filter(has_match) |>
   write.csv(
@@ -232,54 +241,68 @@ pat_dx_flags |>
 pat_dx_flags_llm_context |>
   filter(!has_match_llm_context) |>
   write.csv(
-    here::here("data-raw/patient_data/dx_llm_context_superset_roadmap_unmatched.csv"),
+    here::here(
+      "data-raw/patient_data/dx_llm_context_superset_roadmap_unmatched.csv"
+    ),
     row.names = FALSE
   )
 pat_dx_flags_nocontext |>
   filter(!has_match_llm_nocontext) |>
   write.csv(
-    here::here("data-raw/patient_data/dx_llm_nocontext_superset_roadmap_unmatched.csv"),
+    here::here(
+      "data-raw/patient_data/dx_llm_nocontext_superset_roadmap_unmatched.csv"
+    ),
     row.names = FALSE
   )
 
 
 library(ggplot2)
 plot_data <- pat_dx_flags |>
-  summarize(has_match = sum(has_match), 
-            not_has_match = n() - has_match) |> 
-  mutate(variable = "Original Roadmap") |> 
-  pivot_longer(cols = has_match:not_has_match, 
-               names_to = "value", 
-               values_to = "n") |> 
+  summarize(has_match = sum(has_match), not_has_match = n() - has_match) |>
+  mutate(variable = "Original Roadmap") |>
+  pivot_longer(
+    cols = has_match:not_has_match,
+    names_to = "value",
+    values_to = "n"
+  ) |>
   bind_rows(
     pat_dx_flags_llm_context |>
-      summarize(has_match = sum(has_match_llm_context), 
-                not_has_match = n() - has_match) |> 
-      mutate(variable = "LLM (Context) Roadmap") |> 
-      pivot_longer(cols = has_match:not_has_match, 
-                   names_to = "value", 
-                   values_to = "n")
-  ) |> 
+      summarize(
+        has_match = sum(has_match_llm_context),
+        not_has_match = n() - has_match
+      ) |>
+      mutate(variable = "LLM (Context) Roadmap") |>
+      pivot_longer(
+        cols = has_match:not_has_match,
+        names_to = "value",
+        values_to = "n"
+      )
+  ) |>
   bind_rows(
     pat_dx_flags_nocontext |>
-      summarize(has_match = sum(has_match_llm_nocontext), 
-                not_has_match = n() - has_match) |> 
-      mutate(variable = "LLM (No Context) Roadmap") |> 
-      pivot_longer(cols = has_match:not_has_match, 
-                   names_to = "value", 
-                   values_to = "n")
-  ) |> 
+      summarize(
+        has_match = sum(has_match_llm_nocontext),
+        not_has_match = n() - has_match
+      ) |>
+      mutate(variable = "LLM (No Context) Roadmap") |>
+      pivot_longer(
+        cols = has_match:not_has_match,
+        names_to = "value",
+        values_to = "n"
+      )
+  ) |>
   mutate(
-    variable = factor(x = variable, 
-                      levels = c("LLM (No Context) Roadmap", 
-                                 "Original Roadmap", 
-                                 "LLM (Context) Roadmap"))
-  ) 
+    variable = factor(
+      x = variable,
+      levels = c(
+        "LLM (No Context) Roadmap",
+        "Original Roadmap",
+        "LLM (Context) Roadmap"
+      )
+    )
+  )
 
-ggplot(plot_data, 
-       aes(x = variable, 
-           y = n, 
-           fill = value)) +
+ggplot(plot_data, aes(x = variable, y = n, fill = value)) +
   geom_col(position = position_dodge(width = 1)) +
   geom_text(aes(label = n), position = position_dodge(width = 1)) +
   theme_minimal()
