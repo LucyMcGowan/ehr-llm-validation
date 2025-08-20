@@ -14,6 +14,7 @@ nrow(ehr_ali_long) ## Check: 10,000 rows (one per patient per component)
 
 # Merge in the ICD mapping
 icd_dx = read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/dx_llm_nocontext_superset_roadmap.csv") |> 
+  rename(matched_terms = matched_terms_llm_nocontext) |> 
   dplyr::select(PAT_MRN_ID, DX_CODE, DX_DESC, Variable_Name, matched_terms) |> 
   unique() |> 
   group_by(PAT_MRN_ID, Variable_Name) |> ## Some people had multiple ICD codes per component
