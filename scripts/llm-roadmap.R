@@ -125,7 +125,7 @@ tool_data <- tool(
 
 c_context$register_tool(tool_data)
 c_context$chat(
-  "Please propose an exhaustive list of terms (avoiding acronyms) that will be used to search ICD Descriptions to identify each of the missing biomarkers and create a data frame with these codes. I want you to repeat this process 20 times, creating a new data frame each time with each having a unique name starting with `df_context`. Each time you repeat this, be sure to make as exhaustive a list as possible. These lists can vary."
+  "Please propose an exhaustive list of terms (avoiding acronyms) that will be used to search ICD Descriptions to identify each of the missing biomarkers and create a data frame with these codes. I want you to repeat this process 20 times, creating a new data frame each time with each having a unique name starting with `df_context`. Each time you repeat this, be sure to include the examples given in (e.g.,) and make as exhaustive a list as possible. These lists can vary."
 )
 
 # Convert clinicians' roadmap to a readable format for the prompt
