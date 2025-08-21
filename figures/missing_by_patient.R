@@ -9,14 +9,14 @@ cols = c("#ff99ff", "#8bdddb", "#787ff6", "#ffbd59", "#7dd5f6")
 
 # Load data
 ## ALI components before and after validation (waves separately)
-all_data = read.csv("~/Documents/Allostatic_load_audits/ICD-Codes/all_ali_dat_w_icd.csv") |> 
+all_data = read.csv(here::here("data-raw/patient_data/ali_dat_original_roadmap.csv")) |> 
   mutate(CHART_ALI_COMPONENT = if_else(condition = !is.na(ALI_COMPONENT) & is.na(CHART_ALI_COMPONENT), 
                                        true = ALI_COMPONENT, 
                                        false = CHART_ALI_COMPONENT)) |> 
   select(PAT_MRN_ID, Variable_Name, ALI_COMPONENT, SUPP_ALI_COMPONENT, CHART_ALI_COMPONENT) |> 
   rename(ORIG_ALI_COMPONENT = SUPP_ALI_COMPONENT) |> 
   left_join(
-    read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_nocontext_roadmap.csv") |> 
+    read.csv(here::here("data-raw/patient_data/ali_dat_llm_nocontext_roadmap.csv")) |> 
       mutate(CHART_ALI_COMPONENT = if_else(condition = !is.na(ALI_COMPONENT) & is.na(CHART_ALI_COMPONENT), 
                                            true = ALI_COMPONENT, 
                                            false = CHART_ALI_COMPONENT)) |> 
@@ -24,7 +24,7 @@ all_data = read.csv("~/Documents/Allostatic_load_audits/ICD-Codes/all_ali_dat_w_
       rename(LLM_ALI_COMPONENT = SUPP_ALI_COMPONENT)
   ) |> 
   left_join(
-    read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_roadmap.csv") |> 
+    read.csv(here::here("data-raw/patient_data/ali_dat_llm_context_roadmap.csv")) |> 
       mutate(CHART_ALI_COMPONENT = if_else(condition = !is.na(ALI_COMPONENT) & is.na(CHART_ALI_COMPONENT), 
                                            true = ALI_COMPONENT, 
                                            false = CHART_ALI_COMPONENT)) |> 
@@ -81,17 +81,24 @@ bar_plot = num_miss |>
 bar_plot
 
 ## Save it 
-ggsave(filename = "~/Documents/ehr-llm-validation/figures/missing_by_patient.png", 
+ggsave(filename = here::here("figures/missing_by_patient.png"), 
        device = "png", width = 10, height = 6, units = "in")
+
+## Calculate median non-missing 
+med_nonmiss = num_miss |> 
+  group_by(DATA) |> 
+  summarize(median_nonmiss = median(10 - NUM_MISSING))
 
 bar_plot + 
   facet_wrap(~DATA) + 
+  # geom_text(data = med_nonmiss, aes(label = median_nonmiss),
+  #           x = Inf, y = Inf, hjust = 1, vjust = 0) + 
   theme(strip.background = element_rect(fill = "black"), 
         strip.text = element_text(color = "white", face = "bold")) + 
   scale_fill_manual(values = cols, guide = "none") 
 
 ## Save it 
-ggsave(filename = "~/Documents/ehr-llm-validation/figures/missing_by_patient_faceted.png", 
+ggsave(filename = here::here("figures/missing_by_patient_faceted.png"), 
        device = "png", width = 10, height = 6, units = "in")
 
 # Create bar plot of missing values per component (colored by wave)
@@ -185,5 +192,5 @@ num_miss |>
   scale_pattern_discrete(guide = "none")
 
 ## Save it 
-ggsave(filename = "~/Documents/ehr-llm-validation/figures/missing_by_patient_faceted_sidebyside_chartreview.png", 
+ggsave(filename = here::here("figures/missing_by_patient_faceted_sidebyside_chartreview.png"), 
        device = "png", width = 10, height = 6, units = "in")
