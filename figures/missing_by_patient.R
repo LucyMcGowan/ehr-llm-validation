@@ -44,13 +44,13 @@ bar_plot = num_miss |>
   mutate(DATA = factor(x = DATA, 
                        levels = c("ALI_COMPONENT", 
                                   "CHART_ALI_COMPONENT", 
+                                  "LLM_ALI_COMPONENT",
                                   "ORIG_ALI_COMPONENT", 
-                                  "LLM_ALI_COMPONENT", 
                                   "LLM_CONTEXT_ALI_COMPONENT"), 
                        labels = c("Unvalidated EHR Data", 
                                   "Chart Review Validation", 
-                                  "Augmented (Original Roadmap)", 
                                   "Augmented (LLMs w/o Context Roadmap)",
+                                  "Augmented (Original Roadmap)", 
                                   "Augmented (LLMs w/ Context Roadmap)"))) |> 
   group_by(DATA, NUM_MISSING) |> 
   summarize(n = n()) |> 
@@ -66,11 +66,11 @@ bar_plot = num_miss |>
             position = position_dodge(width = 1)) + 
   theme_minimal(base_size = 14) + 
   labs(x = "Number of Missing Allostatic Load Index Components", 
-       y = "Number of Patients", 
-       title = "Number of Missing ALI Components by Patient") +
+       y = "Number of Patients") + #, 
+       #title = "Number of Missing ALI Components by Patient") +
   theme(title = element_text(face = "bold"), 
         legend.position = "inside", 
-        legend.position.inside = c(1, 0.9),
+        legend.position.inside = c(1, 0.8),
         legend.text = element_text(size = 12), 
         legend.title = element_text(size = 12, face = "bold"), 
         legend.justification = "right", 
@@ -82,12 +82,15 @@ bar_plot
 
 ## Save it 
 ggsave(filename = here::here("figures/missing_by_patient.png"), 
-       device = "png", width = 10, height = 6, units = "in")
+       device = "png", width = 14, height = 7, units = "in")
 
 ## Calculate median non-missing 
 med_nonmiss = num_miss |> 
   group_by(DATA) |> 
-  summarize(median_nonmiss = median(10 - NUM_MISSING))
+  summarize(median_miss = median(NUM_MISSING), 
+            q1_nonmiss = quantile(x = (10 - NUM_MISSING), 0.25),
+            median_nonmiss = median(10 - NUM_MISSING), 
+            q3_nonmiss = quantile(x = (10 - NUM_MISSING), 0.75))
 
 bar_plot + 
   facet_wrap(~DATA) + 

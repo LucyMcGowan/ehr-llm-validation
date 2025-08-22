@@ -56,13 +56,13 @@ bar_plot = num_miss |>
          DATA = factor(x = DATA, 
                        levels = c("ALI_COMPONENT", 
                                   "CHART_ALI_COMPONENT", 
+                                  "LLM_ALI_COMPONENT",
                                   "ORIG_ALI_COMPONENT", 
-                                  "LLM_ALI_COMPONENT", 
                                   "LLM_CONTEXT_ALI_COMPONENT"), 
                        labels = c("Unvalidated EHR Data", 
                                   "Chart Review Validation", 
-                                  "Augmented (Original Roadmap)", 
                                   "Augmented (LLMs w/o Context Roadmap)",
+                                  "Augmented (Original Roadmap)", 
                                   "Augmented (LLMs w/ Context Roadmap)"))) |> 
   ggplot(aes(x = Variable_Name, 
              y = NUM_MISSING, 
@@ -76,11 +76,11 @@ bar_plot = num_miss |>
             position = position_dodge(width = 1)) + 
   theme_minimal(base_size = 14) + 
   labs(x = "Allostatic Load Index Component", 
-       y = "Number of Patients", 
-       title = "Missing Values by Component") +
+       y = "Number of Patients") + #, 
+       #title = "Missing Values by Component") +
   theme(title = element_text(face = "bold"), 
         legend.position = "inside", 
-        legend.position.inside = c(1, 0.9),
+        legend.position.inside = c(1, 0.8),
         legend.text = element_text(size = 12), 
         legend.title = element_text(size = 12, face = "bold"), 
         legend.justification = "right", 
@@ -92,7 +92,7 @@ bar_plot
 
 ## Save it 
 ggsave(filename = here::here("figures/missing_by_component.png"), 
-       device = "png", width = 12, height = 6, units = "in")
+       device = "png", width = 14, height = 7, units = "in")
 
 ## Calculate median non-missing 
 med_nonmiss = num_miss |> 
@@ -207,4 +207,4 @@ num_miss |>
 
 ## Save it 
 ggsave(filename = here::here("figures/missing_by_component_faceted_sidebyside_chartreview.png"), 
-       device = "png", width = 12, height = 6, units = "in")
+       device = "png", width = 14, height = 6, units = "in")
