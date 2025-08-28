@@ -141,6 +141,29 @@ matches_llm_context = dx_uq |>
     .groups = "drop"
   )
 
+## LLM roadmap with context (clinician reviewed)
+ashish_dx_codes = read.csv(here::here(
+  "data-raw/AKK_llm_context_roadmap_for_ashish.csv"
+)) |> 
+  select(VARIABLE_NAME, ICD_DX_CODE) |> 
+  rename(Variable_Name = VARIABLE_NAME, 
+         DX_CODE = ICD_DX_CODE) |> 
+  mutate(CLINICIAN_AGREED = TRUE) 
+matches_llm_context_ashish = matches_llm_context |> 
+  left_join(ashish_dx_codes) |> 
+  mutate(CLINICIAN_AGREED = if_else(condition = is.na(CLINICIAN_AGREED), 
+                                    true = FALSE, 
+                                    false = CLINICIAN_AGREED)) |> 
+  #select(-CLINICIAN_AGREED) |> 
+  rename(matched_terms_llm_context_clinician = matched_terms_llm_context)
+matches_llm_context_ashish |> 
+  write.csv(here::here(
+    "data-raw/llm_context_superset_roadmap_clinician_reviewed.csv"
+  ))
+matches_llm_context_ashish = matches_llm_context_ashish |> 
+  filter(CLINICIAN_AGREED) |> 
+  select(-CLINICIAN_AGREED)
+
 matches_llm_nocontext = dx_uq |>
   cross_join(roadmap_llm_nocontext) |>
   filter(str_detect(
@@ -177,7 +200,20 @@ pat_dx_flags_llm_context = pat_dx |>
       ""
     ))
   )
-## LLM Roadmap (Context)
+## LLM Roadmap (Context), Clinician Reviewed
+pat_dx_flags_llm_context_ashish = pat_dx |>
+  left_join(
+    matches_llm_context_ashish,
+    by = c("DX_CODE", "DX_DESC")
+  ) |>
+  mutate(
+    has_matched_terms_llm_context_clinician = !is.na(matched_terms_llm_context_clinician),
+    matched_terms_llm_context_clinician = str_trim(replace_na(
+      matched_terms_llm_context_clinician,
+      ""
+    ))
+  )
+## LLM Roadmap (No Context)
 pat_dx_flags_nocontext = pat_dx |>
   left_join(
     matches_llm_nocontext,
@@ -238,6 +274,12 @@ pat_dx_flags_llm_context |>
     here::here("data-raw/patient_data/dx_llm_context_superset_roadmap.csv"),
     row.names = FALSE
   )
+pat_dx_flags_llm_context_ashish |>
+  filter(has_matched_terms_llm_context_clinician) |>
+  write.csv(
+    here::here("data-raw/patient_data/dx_llm_context_superset_clinician_reviewed_roadmap.csv"),
+    row.names = FALSE
+  )
 pat_dx_flags_nocontext |>
   filter(has_match_llm_nocontext) |>
   write.csv(
@@ -258,6 +300,12 @@ pat_dx_flags_llm_context |>
     here::here(
       "data-raw/patient_data/dx_llm_context_superset_roadmap_unmatched.csv"
     ),
+    row.names = FALSE
+  )
+pat_dx_flags_llm_context_ashish |>
+  filter(!has_matched_terms_llm_context_clinician) |>
+  write.csv(
+    here::here("data-raw/patient_data/dx_llm_context_superset_clinician_reviewed_roadmap_unmatched.csv"),
     row.names = FALSE
   )
 pat_dx_flags_nocontext |>
@@ -294,6 +342,19 @@ plot_data <- pat_dx_flags |>
       )
   ) |>
   bind_rows(
+    pat_dx_flags_llm_context_ashish |>
+      summarize(
+        has_match = sum(has_matched_terms_llm_context_clinician),
+        not_has_match = n() - has_match
+      ) |>
+      mutate(variable = "LLM (Context) + Clinician Reviewed Roadmap") |>
+      pivot_longer(
+        cols = has_match:not_has_match,
+        names_to = "value",
+        values_to = "n"
+      )
+  ) |>
+  bind_rows(
     pat_dx_flags_nocontext |>
       summarize(
         has_match = sum(has_match_llm_nocontext),
@@ -312,11 +373,13 @@ plot_data <- pat_dx_flags |>
       levels = c(
         "LLM (No Context) Roadmap",
         "Original Roadmap",
+        "LLM (Context) + Clinician Reviewed Roadmap",
         "LLM (Context) Roadmap"
       ), 
       labels = c(
         "LLM (No Context)",
         "Original",
+        "LLM (Context) + Clinician",
         "LLM (Context)"
       )
     ), 
