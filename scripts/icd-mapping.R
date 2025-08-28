@@ -402,3 +402,18 @@ ggplot(plot_data, aes(x = variable, y = n, fill = value)) +
                     name = "Has Match:")
 ggsave(filename = here::here("figures/count_matched_dx.png"), 
        width = 7, height = 5, unit = "in")
+
+ggplot(plot_data, aes(x = value, y = n, fill = variable)) +
+  geom_col(position = position_dodge(width = 1)) +
+  geom_text(aes(label = scales::comma(n)), 
+            position = position_dodge(width = 1)) +
+  xlab("Has Match") + 
+  ylab("Number of Patient Diagnosis Codes") + 
+  theme_minimal(base_size = 14) + 
+  theme(axis.title = element_text(face = "bold"), 
+        legend.position = "top") + 
+  scale_y_continuous(labels = scales::comma) + 
+  scale_fill_manual(values = paper_colors, 
+                    name = "Roadmap:")
+ggsave(filename = here::here("figures/count_matched_dx_alt.png"), 
+       width = 7, height = 5, unit = "in")
