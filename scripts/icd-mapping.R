@@ -395,13 +395,18 @@ ggplot(plot_data, aes(x = variable, y = n, fill = value)) +
   xlab("Roadmap") + 
   ylab("Number of Patient Diagnosis Codes") + 
   theme_minimal(base_size = 14) + 
-  theme(axis.title = element_text(face = "bold"), 
-        legend.position = "top") + 
+  theme(title = element_text(face = "bold"), 
+        legend.position = "inside", 
+        legend.position.inside = c(0, 0.85),
+        legend.text = element_text(size = 12), 
+        legend.title = element_text(size = 12, face = "bold"), 
+        legend.justification = "left", 
+        legend.background = element_rect(fill = "white")) + 
   scale_y_continuous(labels = scales::comma) + 
   scale_fill_manual(values = paper_colors[c(4, 5)], 
                     name = "Has Match:")
 ggsave(filename = here::here("figures/count_matched_dx.png"), 
-       width = 7, height = 5, unit = "in")
+       width = 9, height = 5, unit = "in")
 
 ggplot(plot_data, aes(x = value, y = n, fill = variable)) +
   geom_col(position = position_dodge(width = 1)) +
@@ -410,10 +415,15 @@ ggplot(plot_data, aes(x = value, y = n, fill = variable)) +
   xlab("Has Match") + 
   ylab("Number of Patient Diagnosis Codes") + 
   theme_minimal(base_size = 14) + 
-  theme(axis.title = element_text(face = "bold"), 
-        legend.position = "top") + 
+  theme(title = element_text(face = "bold"), 
+        legend.position = "inside", 
+        legend.position.inside = c(0, 0.79),
+        legend.text = element_text(size = 12), 
+        legend.title = element_text(size = 12, face = "bold"), 
+        legend.justification = "left", 
+        legend.background = element_rect(fill = "white")) + 
   scale_y_continuous(labels = scales::comma) + 
   scale_fill_manual(values = paper_colors, 
                     name = "Roadmap:")
 ggsave(filename = here::here("figures/count_matched_dx_alt.png"), 
-       width = 7, height = 5, unit = "in")
+       width = 9, height = 5, unit = "in")
