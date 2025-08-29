@@ -9,3 +9,7 @@ source("~/Documents/ehr-llm-validation/scripts/merge-icd-patients-llm-roadmap-no
 # Merge LLMs (context) roadmap into EHR + chart reviews 
 source("~/Documents/ehr-llm-validation/scripts/merge-icd-patients-llm-roadmap-context.R")
 ## --> ali_dat_llm_context_roadmap.csv
+
+# Merge LLMs (context) roadmap into EHR + chart reviews 
+source("~/Documents/ehr-llm-validation/scripts/merge-icd-patients-llm-roadmap-context-clinician.R")
+## --> ali_dat_llm_context_clinician_roadmap.csv
