@@ -148,6 +148,6 @@ make_heatmaps = function(data_path, roadmap_label, save_to, ehr_vs_chart = FALSE
       labs(x = "Unvalidated Allostatic Load Index\nComponent (from the EHR)", 
            y = "Validated Allostatic Load Index\nComponent (from Chart Review)",) 
     ggsave(filename = save_to[3],
-           device = "png", width = 8, height = 4, units = "in")
+           device = "png", width = 9, height = 4, units = "in")
   }
 }
