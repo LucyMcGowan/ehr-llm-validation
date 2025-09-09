@@ -76,10 +76,10 @@ bar_plot = num_miss |>
                                   "LLM_CONTEXT_ALI_COMPONENT"), 
                        labels = c("Unvalidated EHR Data", 
                                   "Chart Review Validation", 
-                                  "Augmented (LLMs w/o Context Roadmap)",
-                                  "Augmented (Clinicians Original Roadmap)", 
-                                  "Augmented (Clinicians + LLMs w/ Context Roadmap)", 
-                                  "Augmented (LLMs w/ Context Roadmap)"))) |> 
+                                  "LLMs without Context Roadmap (Augmented)",
+                                  "Clinicians' Original Roadmap (Augmented)", 
+                                  "Clinicians Reviewed LLMs with Context Roadmap (Augmented)", 
+                                  "LLMs with Context Roadmap (Augmented)"))) |> 
   ggplot(aes(x = Variable_Name, 
              y = NUM_MISSING, 
              fill = DATA)) + 
@@ -92,7 +92,7 @@ bar_plot = num_miss |>
             position = position_dodge(width = 1)) + 
   theme_minimal(base_size = 14) + 
   labs(x = "Allostatic Load Index Component", 
-       y = "Number of Patients") + #, 
+       y = "Number of Patients Missing the Component") + #, 
        #title = "Missing Values by Component") +
   theme(title = element_text(face = "bold"), 
         legend.position = "inside", 
@@ -167,8 +167,8 @@ ggsave(filename = here::here("figures/missing_by_component_faceted.png"),
 #                        labels = c("Chart Review Validation", 
 #                                   "Unvalidated EHR Data", 
 #                                   "Augmented (Original Roadmap)", 
-#                                   "Augmented (LLMs w/o Context Roadmap)",
-#                                   "Augmented (LLMs w/ Context Roadmap)")), 
+#                                   "LLMs without Context Roadmap (Augmented)",
+#                                   "LLMs with Context Roadmap (Augmented)")), 
 #          FAC_DATA = factor(x = FAC_DATA, 
 #                            levels = c("ALI_COMPONENT", 
 #                                       "CHART_ALI_COMPONENT", 
@@ -178,8 +178,8 @@ ggsave(filename = here::here("figures/missing_by_component_faceted.png"),
 #                            labels = c("Unvalidated EHR Data", 
 #                                       "Chart Review Validation", 
 #                                       "Augmented (Original Roadmap)", 
-#                                       "Augmented (LLMs w/o Context Roadmap)",
-#                                       "Augmented (LLMs w/ Context Roadmap)")), 
+#                                       "LLMs without Context Roadmap (Augmented)",
+#                                       "LLMs with Context Roadmap (Augmented)")), 
 #          CHART_REVIEW = factor(x = DATA == "Chart Review Validation", 
 #                                levels = c(TRUE, FALSE), 
 #                                labels = c("Chart Review", "Not Chart Review"))) |> 
