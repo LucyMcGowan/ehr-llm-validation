@@ -13,7 +13,7 @@ val_pat_id = read.csv("~/Documents/Allostatic_load_audits/all_ali_dat.csv") |>
 
 # Write a function to load data and make flowchart comparing 
 ## Roadmap to chart review (in validated subset of 100 patients)
-make_flowchart = function(data_path, save_as) {
+make_flowchart = function(data_path, save_as, incl_ehr = FALSE) {
   # Load data, contains: 
   ## Unvalidated ALI components (original extracted EHR data) for all 1000 patients -- "ALI_COMPONENT"
   ## Unvalidated ALI components augmented using audit roadmap for all 1000 patients -- SUPP_ALI_COMPONENT
@@ -26,7 +26,7 @@ make_flowchart = function(data_path, save_as) {
                                        levels = c(1, 0, NA), 
                                        labels = c("Unhealthy", 
                                                   "Healthy", 
-                                                  "Unknown"), 
+                                                  "Missing"), 
                                        exclude = NULL),
            #### Check for chart review components where values out of study period were given 
            CHART_ALI_COMPONENT = if_else(condition = !is.na(COMP_FLAG) & stringr::str_detect(string = COMP_FLAG, pattern = Variable_Name), 
@@ -35,13 +35,13 @@ make_flowchart = function(data_path, save_as) {
                                         levels = c(1, 0, NA, -1), 
                                         labels = c("Unhealthy", 
                                                    "Healthy", 
-                                                   "Unknown", 
+                                                   "Missing", 
                                                    "Protocol Error"), exclude = NULL), 
            ALI_COMPONENT = factor(x = ALI_COMPONENT, 
                                   levels = c(1, 0, NA), 
                                   labels = c("Unhealthy", 
                                              "Healthy", 
-                                             "Unknown"), 
+                                             "Missing"), 
                                   exclude = NULL)) |> 
     filter(PAT_MRN_ID %in% val_pat_id)
   
@@ -60,26 +60,53 @@ make_flowchart = function(data_path, save_as) {
   #   rename(from = CHART_ALI_COMPONENT, 
   #          to = SUPP_ALI_COMPONENT)
   
-  all_data |> 
-    as_fc(label = "Data points validated") |> 
-    fc_split(CHART_ALI_COMPONENT, show_zero = TRUE) |>
-    fc_split(SUPP_ALI_COMPONENT, show_zero = TRUE) |> 
-    fc_modify( # modifying only boxes 4 and 5
-      ~ . |>
-        mutate(
-          bg_fill = ifelse(id %in% c(1), paper_colors[5], bg_fill),
-          bg_fill = ifelse(id %in% c(2, 6, 9, 12, 15), paper_colors[1], bg_fill),
-          bg_fill = ifelse(id %in% c(3, 7, 10, 13, 16), paper_colors[2], bg_fill),
-          bg_fill = ifelse(id %in% c(4, 8, 11, 14, 17), paper_colors[3], bg_fill),
-          bg_fill = ifelse(id %in% c(5), paper_colors[4], bg_fill),
-          #text_color = ifelse(id == 4, "white", text_color),
-          #bg_fill = ifelse(id == 5, "violet", bg_fill)
-        )
-    ) |>
-    fc_draw() |> 
-    fc_export(here::here(save_as), 
-              width = 10000, height = 2500, res = 700)  
+  if (incl_ehr) {
+    all_data |> 
+      as_fc(label = "Data points validated") |> 
+      fc_split(ALI_COMPONENT, show_zero = TRUE) |>
+      fc_split(CHART_ALI_COMPONENT, show_zero = TRUE) |>
+      fc_modify( # modifying only boxes 4 and 5
+        ~ . |>
+          mutate(
+            bg_fill = ifelse(id %in% c(1), paper_colors[5], bg_fill),
+            bg_fill = ifelse(id %in% c(2, 5, 9, 13, 15), paper_colors[1], bg_fill),
+            bg_fill = ifelse(id %in% c(3, 6, 10, 14, 16), paper_colors[2], bg_fill),
+            bg_fill = ifelse(id %in% c(4, 7, 11, 15, 17), paper_colors[3], bg_fill),
+            bg_fill = ifelse(id %in% c(8, 12, 16), paper_colors[4], bg_fill),
+            #text_color = ifelse(id == 4, "white", text_color),
+            #bg_fill = ifelse(id == 5, "violet", bg_fill)
+          )
+      ) |>
+      fc_draw() |> 
+      fc_export(here::here(save_as), 
+                width = 10000, height = 2500, res = 700) 
+  } else {
+    all_data |> 
+      as_fc(label = "Data points validated") |> 
+      fc_split(CHART_ALI_COMPONENT, show_zero = TRUE) |>
+      fc_split(SUPP_ALI_COMPONENT, show_zero = TRUE) |> 
+      fc_modify( # modifying only boxes 4 and 5
+        ~ . |>
+          mutate(
+            bg_fill = ifelse(id %in% c(1), paper_colors[5], bg_fill),
+            bg_fill = ifelse(id %in% c(2, 6, 9, 12, 15), paper_colors[1], bg_fill),
+            bg_fill = ifelse(id %in% c(3, 7, 10, 13, 16), paper_colors[2], bg_fill),
+            bg_fill = ifelse(id %in% c(4, 8, 11, 14, 17), paper_colors[3], bg_fill),
+            bg_fill = ifelse(id %in% c(5), paper_colors[4], bg_fill),
+            #text_color = ifelse(id == 4, "white", text_color),
+            #bg_fill = ifelse(id == 5, "violet", bg_fill)
+          )
+      ) |>
+      fc_draw() |> 
+      fc_export(here::here(save_as), 
+                width = 10000, height = 2500, res = 700) 
+  }
 }
+
+# Make plots for chart review vs. EHR
+make_flowchart(data_path = "~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_original_roadmap.csv", 
+               save_as = "~/Documents/ehr-llm-validation/figures/ehr_vs_chart_flowchart.png", 
+               incl_ehr = TRUE)
 
 # Make plots for original roadmap
 make_flowchart(data_path = "~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_original_roadmap.csv", 
