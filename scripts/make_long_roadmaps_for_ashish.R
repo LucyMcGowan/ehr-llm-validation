@@ -12,5 +12,5 @@ do.call(rbind, lapply(X = 1:10, FUN = make_terms_long, roadmap = llm_nocontext))
   write.csv(here::here("data-raw/llm_nocontext_superset_roadmap_long.csv"))
 
 llm_context = read.csv(here::here("data-raw/llm_context_superset_roadmap.csv"))
-do.call(rbind, lapply(X = 1:10, FUN = make_terms_long, roadmap = llm_nocontext)) |> 
+do.call(rbind, lapply(X = 1:10, FUN = make_terms_long, roadmap = llm_context)) |> 
   write.csv(here::here("data-raw/llm_context_superset_roadmap_long.csv"))
