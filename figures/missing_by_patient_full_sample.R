@@ -69,7 +69,7 @@ bar_plot = num_miss |>
         legend.title = element_text(size = 12, face = "bold"), 
         legend.justification = "right", 
         legend.background = element_rect(fill = "white")) + 
-  scale_fill_manual(values = cols, name = "Data:", 
+  scale_fill_manual(values = cols[c(1:2, 5)], name = "Data:", 
                     labels = function(x) str_wrap(x, width = 60)) + 
   scale_y_continuous(expand = expansion(mult = c(0, 0.1))) + 
   scale_x_continuous(breaks = 0:10)
@@ -82,7 +82,6 @@ ggsave(filename = here::here("Documents/ehr-llm-validation/figures/missing_by_pa
 ## Calculate median non-missing 
 num_miss |> 
   group_by(DATA) |> 
-  summarize(median_miss = median(NUM_MISSING), 
-            q1_nonmiss = quantile(x = (10 - NUM_MISSING), 0.25),
+  summarize(q1_nonmiss = quantile(x = (10 - NUM_MISSING), 0.25),
             median_nonmiss = median(10 - NUM_MISSING), 
             q3_nonmiss = quantile(x = (10 - NUM_MISSING), 0.75))
