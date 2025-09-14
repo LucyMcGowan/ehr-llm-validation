@@ -28,7 +28,7 @@ scatter_plot = all_data |>
                                   "ALG_AUG_ALI"), 
                        labels = c("Unvalidated EHR Data", 
                                   "Chart Review Validation", 
-                                  "Clinicians Reviewed LLMs with\nContext Roadmap (Augmented)"))) |> 
+                                  "Clinicians Reviewed LLMs with Context Roadmap (Augmented)"))) |> 
   ggplot(aes(x = ALI, 
              y = VAL, 
              shape = DATA, 
@@ -59,7 +59,6 @@ scatter_plot
 ggsave(filename = here::here("Documents/ehr-llm-validation/figures/compare_ali_validated_augmented.png"), 
        device = "png", width = 14, height = 7, units = "in")
 
-
 box_plot = all_data |> 
   pivot_longer(cols = ALI:ALG_AUG_ALI, names_to = "DATA", values_to = "VAL") |> 
   mutate(DATA = factor(x = DATA, 
@@ -68,7 +67,7 @@ box_plot = all_data |>
                                   "ALG_AUG_ALI"), 
                        labels = c("Unvalidated EHR Data", 
                                   "Chart Review Validation", 
-                                  "Clinicians Reviewed LLMs with Context Roadmap (Augmented)"))) |>
+                                  "Clinicians Reviewed LLMs with\nContext Roadmap (Augmented)"))) |>
   filter(DATA != "Chart Review Validation") |> 
   ggplot(aes(x = DATA, 
              y = VAL, 
@@ -84,6 +83,8 @@ box_plot = all_data |>
         legend.text = element_text(size = 12), 
         legend.title = element_text(size = 12, face = "bold"), 
         legend.justification = "left", 
-        legend.background = element_rect(fill = "white")) + 
-  coord_equal()
+        legend.background = element_rect(fill = "white")) 
 box_plot
+## Save it 
+ggsave(filename = here::here("Documents/ehr-llm-validation/figures/compare_ali_validated_augmented_boxplot.png"), 
+       device = "png", width = 7, height = 7, units = "in")
