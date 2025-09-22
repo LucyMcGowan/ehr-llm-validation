@@ -63,7 +63,7 @@ make_flowchart = function(data_path, save_as, start_with_ehr = FALSE, then_chart
   if (start_with_ehr) {
     if (then_chart_review) {
       all_data |> 
-        as_fc(label = "Data points validated") |> 
+        as_fc(label = "Data Points Validated") |> 
         fc_split(ALI_COMPONENT, show_zero = TRUE) |>
         fc_split(CHART_ALI_COMPONENT, show_zero = TRUE) |>
         fc_modify( # modifying only boxes 4 and 5
@@ -78,12 +78,12 @@ make_flowchart = function(data_path, save_as, start_with_ehr = FALSE, then_chart
               #bg_fill = ifelse(id == 5, "violet", bg_fill)
             )
         ) |>
-        fc_draw() |> 
+        fc_draw(canvas_bg = NULL) |> 
         fc_export(here::here(save_as), 
                   width = 10000, height = 2500, res = 700) 
     } else {
       all_data |> 
-        as_fc(label = "Data points validated") |> 
+        as_fc(label = "Data Points Validated") |> 
         fc_split(ALI_COMPONENT, show_zero = TRUE) |>
         fc_split(SUPP_ALI_COMPONENT, show_zero = TRUE) |>
         fc_modify( # modifying only boxes 4 and 5
@@ -98,13 +98,13 @@ make_flowchart = function(data_path, save_as, start_with_ehr = FALSE, then_chart
               #bg_fill = ifelse(id == 5, "violet", bg_fill)
             )
         ) |>
-        fc_draw() |> 
+        fc_draw(canvas_bg = NULL) |> 
         fc_export(here::here(save_as), 
                   width = 10000, height = 2500, res = 700) 
     }
   } else {
     all_data |> 
-      as_fc(label = "Data points validated") |> 
+      as_fc(label = "Data Points Validated") |> 
       fc_split(CHART_ALI_COMPONENT, show_zero = TRUE) |>
       fc_split(SUPP_ALI_COMPONENT, show_zero = TRUE) |> 
       fc_modify( # modifying only boxes 4 and 5
@@ -119,7 +119,7 @@ make_flowchart = function(data_path, save_as, start_with_ehr = FALSE, then_chart
             #bg_fill = ifelse(id == 5, "violet", bg_fill)
           )
       ) |>
-      fc_draw() |> 
+      fc_draw(canvas_bg = NULL) |> 
       fc_export(here::here(save_as), 
                 width = 10000, height = 2500, res = 700) 
   }
