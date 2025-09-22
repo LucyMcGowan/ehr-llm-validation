@@ -14,14 +14,14 @@ val_pat_id = read.csv("~/Documents/Allostatic_load_audits/all_ali_dat.csv") |>
 
 # Load data
 ## ALI components before and after validation (waves separately)
-all_data = read.csv(here::here("data-raw/patient_data/ali_dat_original_roadmap.csv")) |> 
+all_data = read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_original_roadmap.csv") |> 
   mutate(CHART_ALI_COMPONENT = if_else(condition = !is.na(ALI_COMPONENT) & is.na(CHART_ALI_COMPONENT), 
                                        true = ALI_COMPONENT, 
                                        false = CHART_ALI_COMPONENT)) |> 
   select(PAT_MRN_ID, Variable_Name, ALI_COMPONENT, SUPP_ALI_COMPONENT, CHART_ALI_COMPONENT) |> 
   rename(ORIG_ALI_COMPONENT = SUPP_ALI_COMPONENT) |> 
   left_join(
-    read.csv(here::here("data-raw/patient_data/ali_dat_llm_nocontext_roadmap.csv")) |> 
+    read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_nocontext_roadmap.csv") |> 
       mutate(CHART_ALI_COMPONENT = if_else(condition = !is.na(ALI_COMPONENT) & is.na(CHART_ALI_COMPONENT), 
                                            true = ALI_COMPONENT, 
                                            false = CHART_ALI_COMPONENT)) |> 
@@ -29,7 +29,7 @@ all_data = read.csv(here::here("data-raw/patient_data/ali_dat_original_roadmap.c
       rename(LLM_ALI_COMPONENT = SUPP_ALI_COMPONENT)
   ) |> 
   left_join(
-    read.csv(here::here("data-raw/patient_data/ali_dat_llm_context_clinician_roadmap.csv")) |> 
+    read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_clinician_roadmap.csv") |> 
       mutate(CHART_ALI_COMPONENT = if_else(condition = !is.na(ALI_COMPONENT) & is.na(CHART_ALI_COMPONENT), 
                                            true = ALI_COMPONENT, 
                                            false = CHART_ALI_COMPONENT)) |> 
@@ -37,7 +37,7 @@ all_data = read.csv(here::here("data-raw/patient_data/ali_dat_original_roadmap.c
       rename(LLM_CONTEXT_CLINICIAN_ALI_COMPONENT = SUPP_ALI_COMPONENT)
   ) |> 
   left_join(
-    read.csv(here::here("data-raw/patient_data/ali_dat_llm_context_roadmap.csv")) |> 
+    read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_roadmap.csv") |> 
       mutate(CHART_ALI_COMPONENT = if_else(condition = !is.na(ALI_COMPONENT) & is.na(CHART_ALI_COMPONENT), 
                                            true = ALI_COMPONENT, 
                                            false = CHART_ALI_COMPONENT)) |> 
@@ -75,30 +75,28 @@ bar_plot = num_miss |>
                                   "LLM_CONTEXT_CLINICIAN_ALI_COMPONENT",
                                   "LLM_CONTEXT_ALI_COMPONENT"), 
                        labels = c("Unvalidated EHR Data", 
-                                  "Chart Review Validation", 
-                                  "LLMs without Context Roadmap (Augmented)",
-                                  "Clinicians' Original Roadmap (Augmented)", 
-                                  "Clinicians Reviewed LLMs with Context Roadmap (Augmented)", 
-                                  "LLMs with Context Roadmap (Augmented)"))) |> 
+                                  "Expert Chart Reviews", 
+                                  "Recovery Algorithm 1:\nLLMs without Context Roadmap",
+                                  "Recovery Algorithm 2:\nClinicians' Original Roadmap", 
+                                  "Recovery Algorithm 3:\nClinicians Reviewed LLMs with Context Roadmap", 
+                                  "Recovery Algorithm 4:\nLLMs with Context Roadmap"))) |> 
   ggplot(aes(x = Variable_Name, 
              y = NUM_MISSING, 
              fill = DATA)) + 
   geom_bar(stat = "identity", 
-           position = "dodge", 
+           position = position_dodge(width = 1), 
            color = "black") + 
   geom_text(aes(label=NUM_MISSING), 
             vjust = -1, 
-            size = 3, 
+            size = 4, 
             position = position_dodge(width = 1)) + 
-  theme_minimal(base_size = 14) + 
-  labs(x = "Allostatic Load Index Component", 
-       y = "Number of Patients Missing the Component") + #, 
-       #title = "Missing Values by Component") +
+  theme_minimal(base_size = 20) + 
+  labs(x = "Missing Allostatic Load Index Component", 
+       y = "Number of Patients") +
   theme(title = element_text(face = "bold"), 
         legend.position = "inside", 
-        legend.position.inside = c(1, 0.8),
-        legend.text = element_text(size = 12), 
-        legend.title = element_text(size = 12, face = "bold"), 
+        legend.position.inside = c(1, 0.75),
+        legend.title = element_text(face = "bold"), 
         legend.justification = "right", 
         legend.background = element_rect(fill = "white")) + 
   scale_fill_manual(values = cols, name = "Data:") + 
@@ -107,120 +105,5 @@ bar_plot = num_miss |>
 bar_plot 
 
 ## Save it 
-ggsave(filename = here::here("figures/missing_by_component.png"), 
+ggsave(filename = "~/Documents/ehr-llm-validation/figures/missing_by_component.png", 
        device = "png", width = 14, height = 7, units = "in")
-
-## Calculate median non-missing 
-med_nonmiss = num_miss |> 
-  group_by(DATA) |> 
-  summarize(median_nonmiss = median(1000 - NUM_MISSING))
-
-bar_plot + 
-  facet_wrap(~DATA) + 
-  theme(strip.background = element_rect(fill = "black"), 
-        strip.text = element_text(color = "white", face = "bold")) + 
-  scale_fill_manual(values = cols, guide = "none") 
-
-## Save it 
-ggsave(filename = here::here("figures/missing_by_component_faceted.png"), 
-       device = "png", width = 12, height = 6, units = "in")
-
-# Create bar plot of missing values per component (colored by wave)
-## But include chart review next to each one 
-# num_miss |> 
-#   filter(DATA != "CHART_ALI_COMPONENT") |> 
-#   mutate(FAC_DATA = DATA) |> 
-#   bind_rows(
-#     num_miss |> 
-#       filter(DATA == "CHART_ALI_COMPONENT") |> 
-#       mutate(FAC_DATA = "ALI_COMPONENT")
-#   ) |> 
-#   bind_rows(
-#     num_miss |> 
-#       filter(DATA == "CHART_ALI_COMPONENT") |> 
-#       mutate(FAC_DATA = "ORIG_ALI_COMPONENT")
-#   ) |> 
-#   bind_rows(
-#     num_miss |> 
-#       filter(DATA == "CHART_ALI_COMPONENT") |> 
-#       mutate(FAC_DATA = "LLM_ALI_COMPONENT")
-#   ) |> 
-#   bind_rows(
-#     num_miss |> 
-#       filter(DATA == "CHART_ALI_COMPONENT") |> 
-#       mutate(FAC_DATA = "LLM_CONTEXT_ALI_COMPONENT")
-#   ) |> 
-#   mutate(Variable_Name = factor(x = Variable_Name, 
-#                                 levels = order_levels, 
-#                                 labels = c("Creatinine Clearance", "Homo-\ncysteine",
-#                                            "C-Reactive Protein", "Hemoglobin A1C", 
-#                                            "Cholest-\nerol", "Trigly-\ncerides", 
-#                                            "Serum Albumin", "Body Mass Index", 
-#                                            "Systolic Blood Pressure", 
-#                                            "Diastolic Blood Pressure")), 
-#          DATA = factor(x = DATA, 
-#                        levels = c("CHART_ALI_COMPONENT", 
-#                                   "ALI_COMPONENT", 
-#                                   "ORIG_ALI_COMPONENT", 
-#                                   "LLM_ALI_COMPONENT", 
-#                                   "LLM_CONTEXT_ALI_COMPONENT"), 
-#                        labels = c("Chart Review Validation", 
-#                                   "Unvalidated EHR Data", 
-#                                   "Augmented (Original Roadmap)", 
-#                                   "LLMs without Context Roadmap (Augmented)",
-#                                   "LLMs with Context Roadmap (Augmented)")), 
-#          FAC_DATA = factor(x = FAC_DATA, 
-#                            levels = c("ALI_COMPONENT", 
-#                                       "CHART_ALI_COMPONENT", 
-#                                       "ORIG_ALI_COMPONENT", 
-#                                       "LLM_ALI_COMPONENT", 
-#                                       "LLM_CONTEXT_ALI_COMPONENT"), 
-#                            labels = c("Unvalidated EHR Data", 
-#                                       "Chart Review Validation", 
-#                                       "Augmented (Original Roadmap)", 
-#                                       "LLMs without Context Roadmap (Augmented)",
-#                                       "LLMs with Context Roadmap (Augmented)")), 
-#          CHART_REVIEW = factor(x = DATA == "Chart Review Validation", 
-#                                levels = c(TRUE, FALSE), 
-#                                labels = c("Chart Review", "Not Chart Review"))) |> 
-#   ggplot(aes(x = Variable_Name, 
-#              y = NUM_MISSING, 
-#              fill = DATA, 
-#              pattern = CHART_REVIEW)) + 
-#   # geom_bar(stat = "identity", 
-#   #          position = "dodge", 
-#   #          color = "black") + 
-#   geom_text(aes(label=NUM_MISSING), 
-#             vjust = -1, 
-#             size = 3, 
-#             position = position_dodge(width = 1)) + 
-#   geom_bar_pattern(stat = "identity", 
-#                    position = position_dodge(preserve = "single"),
-#                    color = "black", 
-#                    pattern_fill = "black",
-#                    pattern_angle = 45,
-#                    pattern_density = 0.1,
-#                    pattern_spacing = 0.025,
-#                    pattern_key_scale_factor = 0.6) + 
-#   facet_wrap(~FAC_DATA) + 
-#   theme_minimal(base_size = 14) + 
-#   labs(x = "Allostatic Load Index Component", 
-#        y = "Number of Patients", 
-#        title = "Missing Values by Component") +
-#   theme(title = element_text(face = "bold"), 
-#         legend.position = "inside", 
-#         legend.position.inside = c(1, 0.9),
-#         legend.text = element_text(size = 12), 
-#         legend.title = element_text(size = 12, face = "bold"), 
-#         legend.justification = "right", 
-#         legend.background = element_rect(fill = "white"), 
-#         strip.background = element_rect(fill = "black"), 
-#         strip.text = element_text(color = "white", face = "bold")) + 
-#   scale_fill_manual(values = cols, guide = "none") + 
-#   scale_y_continuous(expand = expansion(mult = c(0, 0.1))) + 
-#   scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 8)) + 
-#   scale_pattern_discrete(guide = "none")
-# 
-# ## Save it 
-# ggsave(filename = here::here("figures/missing_by_component_faceted_sidebyside_chartreview.png"), 
-#        device = "png", width = 14, height = 6, units = "in")
