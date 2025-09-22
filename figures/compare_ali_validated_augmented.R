@@ -26,9 +26,9 @@ scatter_plot = all_data |>
                        levels = c("ALI", 
                                   "CHART_ALI", 
                                   "ALG_AUG_ALI"), 
-                       labels = c("Unvalidated EHR Data", 
-                                  "Chart Review Validation", 
-                                  "Clinicians Reviewed LLMs with Context Roadmap (Augmented)"))) |> 
+                       labels = c("Extracted EHR Data", 
+                                  "Expert Chart Reviews", 
+                                  "Missing Data Recovery Algorithm"))) |> 
   ggplot(aes(x = ALI, 
              y = VAL, 
              shape = DATA, 
@@ -38,8 +38,8 @@ scatter_plot = all_data |>
   geom_abline(slope = 1, intercept = 0, linetype = 2, color = "black") + 
   geom_smooth(se = FALSE) + 
   theme_minimal(base_size = 14) + 
-  labs(x = "Unvalidated Allostatic Load Index", 
-       y = "Validated/Augmented Allostatic Load Index ") + 
+  labs(x = "ALI from Extracted EHR Data", 
+       y = "ALI from Expert Chart Reviews/Algorithm") + 
   scale_color_manual(values = cols[c(2, 5)], guide = FALSE) + 
   scale_shape_manual(values = c(17, 15), guide = FALSE) + 
   coord_equal() + 
@@ -65,10 +65,10 @@ box_plot = all_data |>
                        levels = c("ALI", 
                                   "CHART_ALI", 
                                   "ALG_AUG_ALI"), 
-                       labels = c("Unvalidated EHR Data", 
-                                  "Chart Review Validation", 
-                                  "Clinicians Reviewed LLMs with\nContext Roadmap (Augmented)"))) |>
-  filter(DATA != "Chart Review Validation") |> 
+                       labels = c("Extracted EHR Data", 
+                                  "Expert Chart Reviews", 
+                                  "Missing Data Recovery Algorithm"))) |>
+  filter(DATA != "Expert Chart Reviews") |> 
   ggplot(aes(x = DATA, 
              y = VAL, 
              fill = DATA)) + 
@@ -83,8 +83,10 @@ box_plot = all_data |>
         legend.text = element_text(size = 12), 
         legend.title = element_text(size = 12, face = "bold"), 
         legend.justification = "left", 
-        legend.background = element_rect(fill = "white")) 
+        legend.background = element_rect(fill = "white")) + 
+  scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 12)) + 
+  coord_flip() 
 box_plot
 ## Save it 
 ggsave(filename = here::here("Documents/ehr-llm-validation/figures/compare_ali_validated_augmented_boxplot.png"), 
-       device = "png", width = 7, height = 7, units = "in")
+       device = "png", width = 7, height = 5, units = "in")
