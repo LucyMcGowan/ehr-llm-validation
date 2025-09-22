@@ -74,12 +74,12 @@ bar_plot = num_miss |>
                                   "ORIG_ALI_COMPONENT", 
                                   "LLM_CONTEXT_CLINICIAN_ALI_COMPONENT",
                                   "LLM_CONTEXT_ALI_COMPONENT"), 
-                       labels = c("Unvalidated EHR Data", 
+                       labels = c("Extracted EHR Data", 
                                   "Expert Chart Reviews", 
-                                  "Recovery Algorithm 1:\nLLMs without Context Roadmap",
-                                  "Recovery Algorithm 2:\nClinicians' Original Roadmap", 
-                                  "Recovery Algorithm 3:\nClinicians Reviewed LLMs with Context Roadmap", 
-                                  "Recovery Algorithm 4:\nLLMs with Context Roadmap"))) |> 
+                                  "Algorithm w/ LLM (Baseline)",
+                                  "Algorithm w/ Clinicians' Original", 
+                                  "Algorithm w/ LLM (Context + Clinicians)", 
+                                  "Algorithm w/ LLM (Context)"))) |> 
   ggplot(aes(x = Variable_Name, 
              y = NUM_MISSING, 
              fill = DATA)) + 

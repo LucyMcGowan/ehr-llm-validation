@@ -51,10 +51,7 @@ all_data = read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_da
 # Create new dataframe with number of missing values per ALI component
 num_miss = all_data |> 
   group_by(PAT_MRN_ID, DATA) |> 
-  summarize(NUM_MISSING = sum(is.na(COMPONENT)))
-
-# Create bar plot of missing values per component (colored by wave)
-bar_plot = num_miss |> 
+  summarize(NUM_MISSING = sum(is.na(COMPONENT))) |> 
   mutate(DATA = factor(x = DATA, 
                        levels = c("ALI_COMPONENT", 
                                   "CHART_ALI_COMPONENT", 
@@ -62,14 +59,27 @@ bar_plot = num_miss |>
                                   "ORIG_ALI_COMPONENT", 
                                   "LLM_CONTEXT_CLINICIAN_ALI_COMPONENT",
                                   "LLM_CONTEXT_ALI_COMPONENT"), 
-                       labels = c("Unvalidated EHR Data", 
+                       labels = c("Extracted EHR Data", 
                                   "Expert Chart Reviews", 
-                                  "Recovery Algorithm 1:\nLLMs without Context Roadmap",
-                                  "Recovery Algorithm 2:\nClinicians' Original Roadmap", 
-                                  "Recovery Algorithm 3:\nClinicians Reviewed LLMs with Context Roadmap", 
-                                  "Recovery Algorithm 4:\nLLMs with Context Roadmap"))) |> 
+                                  "Algorithm w/ LLM (Baseline)",
+                                  "Algorithm w/ Clinicians' Original", 
+                                  "Algorithm w/ LLM (Context + Clinicians)", 
+                                  "Algorithm w/ LLM (Context)"))) 
+
+all_combn = expand.grid(DATA = c("Extracted EHR Data", 
+                                 "Expert Chart Reviews", 
+                                 "Algorithm w/ LLM (Baseline)",
+                                 "Algorithm w/ Clinicians' Original", 
+                                 "Algorithm w/ LLM (Context + Clinicians)", 
+                                 "Algorithm w/ LLM (Context)"), 
+                        NUM_MISSING = 0:10)
+
+# Create bar plot of missing values per component (colored by wave)
+num_miss |> 
   group_by(DATA, NUM_MISSING) |> 
   summarize(n = n()) |> 
+  full_join(all_combn) |> 
+  mutate(n = if_else(condition = is.na(n), true = 0, false = n)) |>
   ggplot(aes(x = NUM_MISSING, 
              y = n, 
              fill = DATA)) + 
@@ -89,10 +99,9 @@ bar_plot = num_miss |>
         legend.title = element_text(face = "bold"), 
         legend.justification = "right", 
         legend.background = element_rect(fill = "white")) + 
-  scale_fill_manual(values = cols, name = "Data:") + 
+  scale_fill_manual(values = cols, name = "Data Source:") + 
   scale_y_continuous(expand = expansion(mult = c(0, 0.1))) + 
   scale_x_continuous(breaks = 0:10)
-bar_plot 
 
 ## Save it 
 ggsave(filename = "~/Documents/ehr-llm-validation/figures/missing_by_patient.png", 
