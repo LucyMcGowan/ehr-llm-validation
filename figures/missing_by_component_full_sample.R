@@ -9,13 +9,13 @@ cols = c("#ff99ff", "#8bdddb", "#787ff6", "#ffbd59", "#7dd5f6", "#ff884d")
 
 # Load data
 ## ALI components before and after validation (waves separately)
-all_data = read.csv(here::here("Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_original_roadmap.csv")) |> 
+all_data = read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_original_roadmap.csv") |> 
   mutate(CHART_ALI_COMPONENT = if_else(condition = !is.na(ALI_COMPONENT) & is.na(CHART_ALI_COMPONENT), 
                                        true = ALI_COMPONENT, 
                                        false = CHART_ALI_COMPONENT)) |> 
   select(PAT_MRN_ID, Variable_Name, ALI_COMPONENT, CHART_ALI_COMPONENT) |> 
   left_join(
-    read.csv(here::here("Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_clinician_roadmap.csv")) |> 
+    read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_clinician_roadmap.csv") |> 
       mutate(CHART_ALI_COMPONENT = if_else(condition = !is.na(ALI_COMPONENT) & is.na(CHART_ALI_COMPONENT), 
                                            true = ALI_COMPONENT, 
                                            false = CHART_ALI_COMPONENT)) |> 
@@ -51,40 +51,38 @@ bar_plot = num_miss |>
                                   "ORIG_ALI_COMPONENT", 
                                   "LLM_CONTEXT_CLINICIAN_ALI_COMPONENT",
                                   "LLM_CONTEXT_ALI_COMPONENT"), 
-                       labels = c("Unvalidated EHR Data", 
-                                  "Chart Review Validation", 
-                                  "LLMs without Context Roadmap (Augmented)",
-                                  "Clinicians' Original Roadmap (Augmented)", 
-                                  "Clinicians Reviewed LLMs with Context Roadmap (Augmented)", 
-                                  "LLMs with Context Roadmap (Augmented)"))) |> 
+                       labels = c("Extracted EHR Data", 
+                                  "Expert Chart Reviews", 
+                                  "Algorithm w/ LLM (Baseline)",
+                                  "Algorithm w/ Clinicians' Original", 
+                                  "Algorithm w/ LLM (Context + Clinicians)", 
+                                  "Algorithm w/ LLM (Context)"))) |> 
   ggplot(aes(x = Variable_Name, 
              y = NUM_MISSING, 
              fill = DATA)) + 
   geom_bar(stat = "identity", 
-           position = "dodge", 
+           position = position_dodge(width = 1), 
            color = "black") + 
   geom_text(aes(label=NUM_MISSING), 
             vjust = -1, 
-            size = 3, 
+            size = 4, 
             position = position_dodge(width = 1)) + 
-  theme_minimal(base_size = 14) + 
-  labs(x = "Allostatic Load Index Component", 
-       y = "Number of Patients Missing the Component") + #, 
-       #title = "Missing Values by Component") +
+  theme_minimal(base_size = 20) + 
+  labs(x = "Missing Allostatic Load Index Component", 
+       y = "Number of Patients") +
   theme(title = element_text(face = "bold"), 
         legend.position = "inside", 
-        legend.position.inside = c(1, 0.8),
-        legend.text = element_text(size = 12), 
-        legend.title = element_text(size = 12, face = "bold"), 
+        legend.position.inside = c(1, 0.75),
+        legend.title = element_text(face = "bold"), 
         legend.justification = "right", 
         legend.background = element_rect(fill = "white")) + 
-  scale_fill_manual(values = cols[c(1:2, 5)], name = "Data:") + 
+  scale_fill_manual(values = cols, name = "Data:") + 
   scale_y_continuous(expand = expansion(mult = c(0, 0.1))) + 
   scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 8))
 bar_plot 
 
 ## Save it 
-ggsave(filename = here::here("Documents/ehr-llm-validation/figures/missing_by_component_full_sample.png"), 
+ggsave(filename = "~/Documents/ehr-llm-validation/figures/missing_by_component_full_sample.png", 
        device = "png", width = 14, height = 7, units = "in")
 
 ## Calculate median non-missing 
