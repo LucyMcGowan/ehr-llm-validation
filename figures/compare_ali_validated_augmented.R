@@ -9,11 +9,11 @@ cols = c("#ff99ff", "#8bdddb", "#787ff6", "#ffbd59", "#7dd5f6", "#ff884d")
 
 # Load data
 ## ALI components before and after validation (waves separately)
-all_data = read.csv(here::here("Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_original_roadmap.csv")) |> 
+all_data = read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_original_roadmap.csv") |> 
   select(PAT_MRN_ID, ANY_ENCOUNTERS, AGE_AT_ENCOUNTER, ALI, CHART_ALI) |> 
   unique() |> 
   left_join(
-    read.csv(here::here("Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_clinician_roadmap.csv")) |> 
+    read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_clinician_roadmap.csv") |> 
       select(PAT_MRN_ID, SUPP_ALI) |> 
       rename(ALG_AUG_ALI = SUPP_ALI) |> 
       unique()
@@ -28,20 +28,17 @@ scatter_plot = all_data |>
                                   "ALG_AUG_ALI"), 
                        labels = c("Extracted EHR Data", 
                                   "Expert Chart Reviews", 
-                                  "Missing Data Recovery Algorithm"))) |> 
+                                  "Algorithm w/ LLM (Context + Clinicians)"))) |> 
   ggplot(aes(x = ALI, 
              y = VAL, 
-             shape = DATA, 
-             color = DATA, 
-             group = DATA)) + 
+             color = DATA)) + 
   geom_point(size = 2) + 
   geom_abline(slope = 1, intercept = 0, linetype = 2, color = "black") + 
   geom_smooth(se = FALSE) + 
-  theme_minimal(base_size = 14) + 
-  labs(x = "ALI from Extracted EHR Data", 
-       y = "ALI from Expert Chart Reviews/Algorithm") + 
+  theme_minimal(base_size = 20) + 
+  labs(x = "Allostatic Load Index from Extracted Electronic Health Records Data", 
+       y = "Allostatic Load Index from Expert Chart Reviews/Algorithm") + 
   scale_color_manual(values = cols[c(2, 5)], guide = FALSE) + 
-  scale_shape_manual(values = c(17, 15), guide = FALSE) + 
   coord_equal() + 
   facet_wrap(~DATA) + 
   theme(title = element_text(face = "bold"), 
@@ -56,8 +53,8 @@ scatter_plot = all_data |>
 scatter_plot
 
 ## Save it 
-ggsave(filename = here::here("Documents/ehr-llm-validation/figures/compare_ali_validated_augmented.png"), 
-       device = "png", width = 14, height = 7, units = "in")
+ggsave(filename = "~/Documents/ehr-llm-validation/figures/compare_ali_validated_augmented.png", 
+       device = "png", width = 14, height = 10, units = "in")
 
 box_plot = all_data |> 
   pivot_longer(cols = ALI:ALG_AUG_ALI, names_to = "DATA", values_to = "VAL") |> 
