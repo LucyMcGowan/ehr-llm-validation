@@ -1,21 +1,22 @@
-On Using Large Language Models to Enhance Clinically-Driven Missing Data
-Recovery Algorithms in Electronic Health Records
-================
+---
+title: "On Using Large Language Models to Enhance Clinically-Driven Missing Data Recovery Algorithms in Electronic Health Records"
+output: github_document
+---
 
-## `R` code to accompany the manuscript by [Lotspeich et al. (2025+)](https://arxiv.org/abs/).
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE, cache = TRUE)
+```
+
+## `R` code to accompany the manuscript by [Lotspeich et al. (2025+)](https://arxiv.org/abs/). 
 
 This code relies on the following `R` packages available from CRAN.
 
-1.  [`ellmer`](https://ellmer.tidyverse.org/): to call large language
-    models (LLM)
-2.  [`dplyr`](https://dplyr.tidyverse.org/): to manipulate data and
-    merge
-3.  [`stringr`](https://stringr.tidyverse.org/): to clean up strings for
-    merging
-4.  [`tidyr`](https://tidyr.tidyverse.org/): to split strings and
-    reformat roadmaps
+  1.  [`ellmer`](https://ellmer.tidyverse.org/): to call large language models (LLM)
+  2.  [`dplyr`](https://dplyr.tidyverse.org/): to manipulate data and merge 
+  3.  [`stringr`](https://stringr.tidyverse.org/): to clean up strings for merging
+  4.  [`tidyr`](https://tidyr.tidyverse.org/): to split strings and reformat roadmaps
 
-``` r
+```{r, eval = TRUE, message = FALSE}
 # Load libraries (install if needed)
 library(ellmer)
 library(dplyr)
@@ -23,18 +24,12 @@ library(stringr)
 library(tidyr)
 ```
 
-## LLM Enhancements
-
+## LLM Enhancements 
 ### LLM (Baseline) Roadmap Without Context
 
-First, we provided the roadmap’s structure as a dataframe “tool” that
-the LLM could access and modify when prompted. Specifically, we created
-a function that takes search terms for the ALI components (as vectors)
-and combines them following the clinical roadmap’s structure (a
-$10 \times 2$ dataframe with a rows per component and a column for
-search terms).
+First, we provided the roadmap's structure as a dataframe "tool" that the LLM could access and modify when prompted. Specifically, we created a function that takes search terms for the ALI components (as vectors) and combines them following the clinical roadmap's structure (a $10 \times 2$ dataframe with a rows per component and a column for search terms). 
 
-``` r
+```{r}
 # Initialize a chat with Google Gemini
 c <- chat_google_gemini()
 
@@ -48,13 +43,9 @@ make_data <- function(creat_c, alb, bmi, sbp, dbp, a1c, chol, trig, crp, hcst, d
 }
 ```
 
-Next, we defined a tool that built on this function by adding a
-description of the tool’s purpose,
-`"Create a dataframe with text ICD description search terms separated by ; for ICD descriptions to match diagnoses when missing from chart review,"`
-and arguments for each component of the roadmap framework, like
-`"Search terms for ICD text descriptions to detect diagnoses that would suggest that a patient's creatinine clearance is at an unhealthy (low) level, separated by a semicolon."`
+Next, we defined a tool that built on this function by adding a description of the tool's purpose, `"Create a dataframe with text ICD description search terms separated by ; for ICD descriptions to match diagnoses when missing from chart review,"` and arguments for each component of the roadmap framework, like `"Search terms for ICD text descriptions to detect diagnoses that would suggest that a patient's creatinine clearance is at an unhealthy (low) level, separated by a semicolon."`
 
-``` r
+```{r}
 # Convert make_data function into a "tool" to be called by the LLM 
 tool_data <- tool(
   make_data,
@@ -75,22 +66,16 @@ tool_data <- tool(
 )
 ```
 
-Then, through the `ellmer` package’s tool functionality, we registered
-this tool (i.e., gave Gemini access to use it) and prompted the LLM to
-generate relevant terms for each ALI component.
+Then, through the `ellmer` package's tool functionality, we registered this tool (i.e., gave Gemini access to use it) and prompted the LLM to generate relevant terms for each ALI component. 
 
-``` r
+```{r}
 # Register tool_data for the Google Gemini chat initialized above
 c$register_tool(tool_data)
 ```
 
-Finally, we essentially requested updates to this roadmap dataframe from
-the LLM, which `ellmer` executed within our `R` session based on either
-Prompt 1 or 2 from the main text. In this way, we obtained a
-programmatically-updated roadmap object that could be immediately used
-in our missing data recovery algorithm pipeline.
+Finally, we essentially requested updates to this roadmap dataframe from the LLM, which `ellmer` executed within our `R` session based on either Prompt 1 or 2 from the main text. In this way, we obtained a programmatically-updated roadmap object that could be immediately used in our missing data recovery algorithm pipeline. 
 
-``` r
+```{r}
 # Prompt the chat, with the registered tool_data
 c$chat(
   "Please propose an exhaustive list of terms (avoiding acronyms) that will be used to search ICD Descriptions to identify each of the missing biomarkers and create a data frame with these codes. I want you to repeat this process 20 times, creating a new data frame each time with each having a unique name starting with `df_nocontext`. Each time you repeat this, be sure to make as exhaustive a list as possible. These lists can vary."
@@ -105,13 +90,9 @@ save(df_nocontext, file = here::here("data-raw/no_context-llm.rda"))
 
 ### LLM (Context) Roadmap
 
-Building on the same `make_data` function for the roadmap’s structure,
-the LLM prompt was modified slightly to instruct the LLM to include the
-examples from the clinicians’ original roadmap (Table 1 in the paper) in
-each iteration. The rest of the code proceeds as with **LLM
-(Baseline)**.
+Building on the same `make_data` function for the roadmap's structure, the LLM prompt was modified slightly to instruct the LLM to include the examples from the clinicians' original roadmap (Table 1 in the paper) in each iteration. The rest of the code proceeds as with **LLM (Baseline)**. 
 
-``` r
+```{r}
 # Initialize a new chat with Google Gemini
 c_context <- chat_google_gemini()
 
@@ -147,12 +128,9 @@ save(df_context, file = here::here("data-raw/context-llm.rda"))
 
 ## Merging ICD-10 Codes + Roadmaps
 
-We begin by reading in the ICD-10 codes with their diagnosis
-descriptions, which are archived on this GitHub. Then, we do minor
-string cleaning on the diagnosis descriptions (making them all capital
-letters and trimming potential whitespace) to make matching easier.
+We begin by reading in the ICD-10 codes with their diagnosis descriptions, which are archived on this GitHub. Then, we do minor string cleaning on the diagnosis descriptions (making them all capital letters and trimming potential whitespace) to make matching easier. 
 
-``` r
+```{r, eval = TRUE}
 # Read in ICD-10 codes with CDC descriptions (archived on GitHub)
 icd10 = read.csv(file = "https://raw.githubusercontent.com/LucyMcGowan/ehr-llm-validation/refs/heads/main/data-raw/icd10cm-codes-2026.csv") |>
   mutate(
@@ -165,43 +143,16 @@ icd10 |>
   head()
 ```
 
-    ##   DX_CODE                                            DX_DESC
-    ## 1    A000 CHOLERA DUE TO VIBRIO CHOLERAE 01, BIOVAR CHOLERAE
-    ## 2    A001    CHOLERA DUE TO VIBRIO CHOLERAE 01, BIOVAR ELTOR
-    ## 3    A009                               CHOLERA, UNSPECIFIED
-    ## 4   A0100                         TYPHOID FEVER, UNSPECIFIED
-    ## 5   A0101                                 TYPHOID MENINGITIS
-    ## 6   A0102               TYPHOID FEVER WITH HEART INVOLVEMENT
+Next, we read in a 10 x 2 dataframe for our chosen roadmap. Here, we demonstrate with the LLM (context) roadmap. After reading it in, we again clean the diagnosis descriptions. 
 
-Next, we read in a 10 x 2 dataframe for our chosen roadmap. Here, we
-demonstrate with the LLM (context) roadmap. After reading it in, we
-again clean the diagnosis descriptions.
-
-``` r
+```{r, eval = TRUE}
 # Read in LLM (context) roadmap
 roadmap = read.csv(file = "https://raw.githubusercontent.com/LucyMcGowan/ehr-llm-validation/refs/heads/main/data-raw/llm_context_roadmap.csv") 
 
 ## View roadmap (original dimensions)
 roadmap |> 
   head()
-```
 
-    ##   Variable_Name
-    ## 1       CREAT_C
-    ## 2           BMI
-    ## 3   BP_SYSTOLIC
-    ## 4  BP_DIASTOLIC
-    ## 5           A1C
-    ## 6          CHOL
-    ##                                                                                                            If_Missing_Search_For
-    ## 1                 Renal failure; renal insufficiency; ESRD; end-stage renal disease; kidney failure; chronic kidney disease; CKD
-    ## 2                                                                              Obesity; morbid obesity; overweight; BMI elevated
-    ## 3                    Hypertension; high blood pressure; HTN; essential hypertension; secondary hypertension; hypertensive crisis
-    ## 4                    Hypertension; high blood pressure; HTN; essential hypertension; secondary hypertension; hypertensive crisis
-    ## 5 Diabetes; impaired glucose; Type 1 diabetes; Type 2 diabetes; diabetes mellitus; DM; hyperglycemia; diabetic ketoacidosis; DKA
-    ## 6                                     Hypercholesterolemia; high cholesterol; dyslipidemia; hyperlipidemia; elevated cholesterol
-
-``` r
 # Transform the roadmap into longer format 
 roadmap = roadmap |>
   ## Create separate rows for each variable, keyword combo
@@ -227,18 +178,9 @@ roadmap |>
   head()
 ```
 
-    ##   Variable_Name    If_Missing_Search_For
-    ## 1       CREAT_C           RENAL.*FAILURE
-    ## 2       CREAT_C     RENAL.*INSUFFICIENCY
-    ## 3       CREAT_C                     ESRD
-    ## 4       CREAT_C ENDSTAGE.*RENAL.*DISEASE
-    ## 5       CREAT_C          KIDNEY.*FAILURE
-    ## 6       CREAT_C CHRONIC.*KIDNEY.*DISEASE
+Finally, we create a cross-join between the ICD-10 codes and the long version of the roadmap and check for matches. 
 
-Finally, we create a cross-join between the ICD-10 codes and the long
-version of the roadmap and check for matches.
-
-``` r
+```{r, eval = TRUE}
 # Create a crosswalk between ICD-10 codes and the roadmap (longer) and check for matches
 matches = icd10 |>
   ## Consider all combinations of ICD-10 codes and roadmap search terms 
@@ -253,25 +195,9 @@ matches |>
   head()
 ```
 
-    ##   DX_CODE                                     DX_DESC Variable_Name
-    ## 1    A021                           SALMONELLA SEPSIS           CRP
-    ## 2   A0220 LOCALIZED SALMONELLA INFECTION, UNSPECIFIED           CRP
-    ## 3   A0229   SALMONELLA WITH OTHER LOCALIZED INFECTION           CRP
-    ## 4    A028       OTHER SPECIFIED SALMONELLA INFECTIONS           CRP
-    ## 5    A029           SALMONELLA INFECTION, UNSPECIFIED           CRP
-    ## 6    A040 ENTEROPATHOGENIC ESCHERICHIA COLI INFECTION           CRP
-    ##   If_Missing_Search_For
-    ## 1                SEPSIS
-    ## 2             INFECTION
-    ## 3             INFECTION
-    ## 4             INFECTION
-    ## 5             INFECTION
-    ## 6             INFECTION
+It's possible that multiple search terms match the same ICD-10 codes, so we then group them and summarize all matches per variable per diagnosis. 
 
-It’s possible that multiple search terms match the same ICD-10 codes, so
-we then group them and summarize all matches per variable per diagnosis.
-
-``` r
+```{r, eval = TRUE}
 # Summarize all matching search terms per diagnosis/variable 
 matches = matches |>
   ## Group by variable and diagnosis 
@@ -286,15 +212,4 @@ matches |>
   head()
 ```
 
-    ## # A tibble: 6 × 4
-    ##   Variable_Name DX_CODE DX_DESC                                    matched_terms
-    ##   <chr>         <chr>   <chr>                                      <chr>        
-    ## 1 A1C           A312    DISSEMINATED MYCOBACTERIUM AVIUM-INTRACEL… DM           
-    ## 2 A1C           E0800   DIABETES MELLITUS DUE TO UNDERLYING CONDI… DIABETES; DI…
-    ## 3 A1C           E0801   DIABETES MELLITUS DUE TO UNDERLYING CONDI… DIABETES; DI…
-    ## 4 A1C           E0810   DIABETES MELLITUS DUE TO UNDERLYING CONDI… DIABETES; DI…
-    ## 5 A1C           E0811   DIABETES MELLITUS DUE TO UNDERLYING CONDI… DIABETES; DI…
-    ## 6 A1C           E0821   DIABETES MELLITUS DUE TO UNDERLYING CONDI… DIABETES; DI…
-
-Then, we merged the roadmaps into patients’ ICD-10 codes extracted from
-the electronic health records (EHR).
+Then, we merged the roadmaps into patients' ICD-10 codes extracted from the electronic health records (EHR). 
