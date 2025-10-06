@@ -156,8 +156,10 @@ letters and trimming potential whitespace) to make matching easier.
 # Read in ICD-10 codes with CDC descriptions (archived on GitHub)
 icd10 = read.csv(file = "https://raw.githubusercontent.com/LucyMcGowan/ehr-llm-validation/refs/heads/main/data-raw/icd10cm-codes-2026.csv") |>
   mutate(
-    DX_DESC = toupper(x = DX_DESC), ## Convert descriptions to all CAPS for easier search
-    DX_DESC = str_trim(string = DX_DESC) ## Trim whitespace
+    ## Convert descriptions to all CAPS for easier search
+    DX_DESC = toupper(x = DX_DESC), 
+    ## Trim whitespace
+    DX_DESC = str_trim(string = DX_DESC) 
   ) 
 
 ## View 
