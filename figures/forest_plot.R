@@ -83,22 +83,24 @@ res |>
                                                                "Age at First Encounter")), 
                                hline = c(NA, 1, 1)), 
              aes(yintercept = hline), linetype = 2, colour = "black") + 
-  geom_point(size = 2) + 
+  geom_point(size = 6) + 
   geom_errorbar(aes(ymin = exp(LB), ymax = exp(UB)), 
-                lwd = 1.2) + 
+                lwd = 3) + 
   facet_wrap(~Coefficient, scales = "free") + 
   theme_minimal(base_size = 20) + 
-  labs(y = "Expected Odds/Odds Ratio") + 
+  labs(x = "Data Source", y = "Expected Odds/Odds Ratio") + 
   theme(title = element_text(face = "bold"), 
         legend.position = "right", 
         legend.title = element_text(face = "bold"), 
         legend.background = element_rect(fill = "white"), 
         strip.text = element_text(face = "bold", color = "white"), 
-        strip.background = element_rect(fill = "black"), 
-        axis.text.x = element_blank()) + 
-  scale_color_manual(values = c(cols[2], "lightgrey", cols[5]), 
+        strip.background = element_rect(fill = "black")) + 
+        #axis.text.x = element_blank()) + 
+  scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 12)) + 
+  scale_color_manual(values = c(cols[2], "#787ff6", cols[5]),  #"lightgrey", 
                      name = "Data Source:", 
-                     labels = function(x) stringr::str_wrap(x, width = 12))
+                     labels = function(x) stringr::str_wrap(x, width = 12), 
+                     guide = "none")
 ## Save it 
 ggsave(filename = "~/Documents/ehr-llm-validation/figures/forest_plot_full_sample.png", 
        device = "png", width = 14, height = 7, units = "in")  
