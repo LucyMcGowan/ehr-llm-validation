@@ -2,9 +2,6 @@
 library(ellmer)
 library(dplyr)
 
-## Load clinicians' original roadmap (for reference)
-roadmap <- readr::read_csv("~/Documents/ehr-llm-validation/data-raw/audit_roadmap.csv")
-
 ## No context (no examples) -----
 for (run in 1:20) {
   ### Initialize new chat -------
@@ -85,7 +82,8 @@ for (run in 1:20) {
   
   ### Prompt chat -------------
   c$chat(
-    paste0("Please propose an exhaustive list of terms (avoiding acronyms) that will be used to search ICD-10 Descriptions to identify each of the missing biomarkers and create a data frame with these codes. Create a new data frame named `df_nocontext_", run, "`. Be sure to make as exhaustive a list as possible.")
+    paste0(
+      "Please propose an exhaustive list of terms (avoiding acronyms) that will be used to search ICD-10 descriptions to identify each of the missing biomarkers. Create a new data frame with these codes named `df_nocontext_", run, "'. Be sure to make as exhaustive a list as possible.")
   )
   
   ### Pause -------------------
@@ -93,9 +91,11 @@ for (run in 1:20) {
 }
 
 ## Combine datasets ----
+load("~/Documents/ehr-llm-validation/data-raw/no_context-llm-loop-icd10-25mar2026.rda")
 dfs <- paste0("df_nocontext_", 1:20)
 df_list <- mget(dfs)
-df_nocontext <- bind_rows(df_list, .id = "id")
+df_nocontext <- bind_rows(df_list, .id = "id") |> 
+  bind_rows(df_nocontext)
 save(df_nocontext, file = "~/Documents/ehr-llm-validation/data-raw/no_context-llm-loop-icd10.rda")
 
 ## With context (examples) -----
@@ -158,25 +158,14 @@ for (run in 1:20) {
   
   ### Prompt chat -------------
   c_context$chat(
-    paste0("Please propose an exhaustive list of terms (avoiding acronyms) that will be used to search ICD-10 Descriptions to identify each of the missing biomarkers and create a data frame with these codes. Create a new data frame named `df_context_", run, "`. Be sure to include the examples given in (e.g.,) and make as exhaustive a list as possible.")
+    paste0("Please propose an exhaustive list of terms (avoiding acronyms) that will be used to search ICD-10 descriptions to identify each of the missing biomarkers. Create a new dataframe with these codes named `df_context_", run, "`. Be sure to include the examples given in (e.g.,) and make as exhaustive a list as possible.")
   )
   
   ### Pause -------------------
   Sys.sleep(60)
 }
 
-# Convert clinicians' roadmap to a readable format for the prompt
-# df_text <- readLines(here::here("data-raw/audit_roadmap.csv"))
-# df_formatted <- paste(df_text, collapse = "\n")
-# 
-# c_context$chat(paste(
-#   "Here's an a data frame that content matter experts came up with, I want you to add to this, so be sure each list contains these values at least:",
-#   df_formatted,
-#   "Please propose an exhaustive list of terms (avoiding acronyms) that will be used to search ICD-10 Descriptions to identify each of the missing biomarkers and create a data frame with these codes. I want you to repeat this process 20 times, creating a new data frame each time with each having a unique name starting with `df_context`. Each time you repeat this, be sure to make as exhaustive a list as possible. These lists can vary.",
-#   sep = "\n\n"
-# ))
-
 dfs <- paste0("df_context_", 1:20)
 df_list <- mget(dfs)
 df_context <- bind_rows(df_list, .id = "id")
-save(df_context, file = here::here("data-raw/context-llm.rda"))
+save(df_context, file = "~/Documents/ehr-llm-validation/data-raw/context-llm-loop-icd10.rda")
