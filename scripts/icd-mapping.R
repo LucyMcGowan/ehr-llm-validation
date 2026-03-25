@@ -91,9 +91,43 @@ roadmap_llm_context = read.csv(here::here(
     If_Missing_Search_For = str_replace_all(If_Missing_Search_For, "\\s+", ".*")
   )
 
-## LLM roadmap no context
+## LLM roadmap with context (for loop, ICD-10)
+roadmap_llm_context_loop_icd10 = read.csv(here::here(
+  "data-raw/llm_context_loop_icd10_superset_roadmap.csv"
+)) |>
+  dplyr::select(Variable_Name, If_Missing_Search_For) |>
+  separate_longer_delim(cols = If_Missing_Search_For, delim = ";") |> ## Create separate rows for each variable, keyword combo
+  mutate(
+    If_Missing_Search_For = toupper(If_Missing_Search_For), ## Convert to all CAPS for easier search
+    If_Missing_Search_For = str_trim(string = If_Missing_Search_For), ## Trim whitespace
+    If_Missing_Search_For = str_replace_all(
+      If_Missing_Search_For,
+      "[[:punct:]]",
+      ""
+    ), ## Remove punctuation
+    If_Missing_Search_For = str_replace_all(If_Missing_Search_For, "\\s+", ".*")
+  )
+
+## LLM roadmap no context 
 roadmap_llm_nocontext = read.csv(here::here(
   "data-raw/llm_nocontext_superset_roadmap.csv"
+)) |>
+  dplyr::select(Variable_Name, If_Missing_Search_For) |>
+  separate_longer_delim(cols = If_Missing_Search_For, delim = ";") |> ## Create separate rows for each variable, keyword combo
+  mutate(
+    If_Missing_Search_For = toupper(If_Missing_Search_For), ## Convert to all CAPS for easier search
+    If_Missing_Search_For = str_trim(string = If_Missing_Search_For), ## Trim whitespace
+    If_Missing_Search_For = str_replace_all(
+      If_Missing_Search_For,
+      "[[:punct:]]",
+      ""
+    ), ## Remove punctuation
+    If_Missing_Search_For = str_replace_all(If_Missing_Search_For, "\\s+", ".*")
+  )
+
+## LLM roadmap no context (for loop, ICD-10)
+roadmap_llm_nocontext_loop_icd10 = read.csv(here::here(
+  "data-raw/llm_nocontext_loop_icd10_superset_roadmap.csv"
 )) |>
   dplyr::select(Variable_Name, If_Missing_Search_For) |>
   separate_longer_delim(cols = If_Missing_Search_For, delim = ";") |> ## Create separate rows for each variable, keyword combo
@@ -197,6 +231,22 @@ matches_llm_context_clinician |>
     "data-raw/llm_context_superset_roadmap_clinician_reviewed.csv"
   ))
 
+matches_llm_context_loop_icd10 = dx_uq |>
+  cross_join(roadmap_llm_context_loop_icd10) |>
+  filter(str_detect(
+    DX_DESC,
+    regex(If_Missing_Search_For, ignore_case = TRUE)
+  )) |>
+  group_by(Variable_Name, DX_CODE, DX_DESC) |>
+  summarise(
+    matched_terms_llm_context_loop_icd10 = str_trim(paste(
+      If_Missing_Search_For,
+      collapse = "; "
+    )),
+    .groups = "drop"
+  )
+
+
 matches_llm_nocontext = dx_uq |>
   cross_join(roadmap_llm_nocontext) |>
   filter(str_detect(
@@ -206,6 +256,21 @@ matches_llm_nocontext = dx_uq |>
   group_by(Variable_Name, DX_CODE, DX_DESC) |>
   summarise(
     matched_terms_llm_nocontext = str_trim(paste(
+      If_Missing_Search_For,
+      collapse = "; "
+    )),
+    .groups = "drop"
+  )
+
+matches_llm_nocontext_loop_icd10 = dx_uq |>
+  cross_join(roadmap_llm_nocontext_loop_icd10) |>
+  filter(str_detect(
+    DX_DESC,
+    regex(If_Missing_Search_For, ignore_case = TRUE)
+  )) |>
+  group_by(Variable_Name, DX_CODE, DX_DESC) |>
+  summarise(
+    matched_terms_llm_nocontext_loop_icd10 = str_trim(paste(
       If_Missing_Search_For,
       collapse = "; "
     )),
@@ -230,6 +295,19 @@ pat_dx_flags_llm_context = pat_dx |>
     has_match_llm_context = !is.na(matched_terms_llm_context),
     matched_terms_llm_context = str_trim(replace_na(
       matched_terms_llm_context,
+      ""
+    ))
+  )
+## LLM Roadmap (Context, for loop and ICD-10)
+pat_dx_flags_llm_context_loop_icd10 = pat_dx |>
+  left_join(
+    matches_llm_context_loop_icd10,
+    by = c("DX_CODE", "DX_DESC")
+  ) |>
+  mutate(
+    has_match_llm_context_loop_icd10 = !is.na(matched_terms_llm_context_loop_icd10),
+    matched_terms_llm_context_loop_icd10 = str_trim(replace_na(
+      matched_terms_llm_context_loop_icd10,
       ""
     ))
   )
@@ -259,6 +337,19 @@ pat_dx_flags_nocontext = pat_dx |>
       ""
     ))
   )
+## LLM Roadmap (No Context, for loop and ICD_10)
+pat_dx_flags_nocontext_loop_icd10 = pat_dx |>
+  left_join(
+    matches_llm_nocontext_loop_icd10,
+    by = c("DX_CODE", "DX_DESC")
+  ) |>
+  mutate(
+    has_match_llm_nocontext_loop_icd10 = !is.na(matched_terms_llm_nocontext_loop_icd10),
+    matched_terms_llm_nocontext_loop_icd10 = str_trim(replace_na(
+      matched_terms_llm_nocontext_loop_icd10,
+      ""
+    ))
+  )
 
 # Check the first few rows of matches -- Looks great!
 pat_dx_flags |>
@@ -278,6 +369,12 @@ pat_dx_flags_llm_context |>
     here::here("data-raw/patient_data/dx_llm_context_superset_roadmap.csv"),
     row.names = FALSE
   )
+pat_dx_flags_llm_context_loop_icd10 |>
+  filter(has_match_llm_context_loop_icd10) |>
+  write.csv(
+    here::here("data-raw/patient_data/dx_llm_context_loop_icd10_superset_roadmap.csv"),
+    row.names = FALSE
+  )
 pat_dx_flags_llm_context_clinician |>
   filter(has_matched_terms_llm_context_clinician) |>
   write.csv(
@@ -288,6 +385,12 @@ pat_dx_flags_nocontext |>
   filter(has_match_llm_nocontext) |>
   write.csv(
     here::here("data-raw/patient_data/dx_llm_nocontext_superset_roadmap.csv"),
+    row.names = FALSE
+  )
+pat_dx_flags_nocontext_loop_icd10 |>
+  filter(has_match_llm_nocontext_loop_icd10) |>
+  write.csv(
+    here::here("data-raw/patient_data/dx_llm_nocontext_loop_icd10_superset_roadmap.csv"),
     row.names = FALSE
   )
 
@@ -306,6 +409,12 @@ pat_dx_flags_llm_context |>
     ),
     row.names = FALSE
   )
+pat_dx_flags_llm_context_loop_icd10 |>
+  filter(!has_match_llm_context_loop_icd10) |>
+  write.csv(
+    here::here("data-raw/patient_data/dx_llm_context_loop_icd10_superset_roadmap_unmatched.csv"),
+    row.names = FALSE
+  )
 pat_dx_flags_llm_context_clinician |>
   filter(!has_matched_terms_llm_context_clinician) |>
   write.csv(
@@ -320,7 +429,12 @@ pat_dx_flags_nocontext |>
     ),
     row.names = FALSE
   )
-
+pat_dx_flags_nocontext_loop_icd10 |>
+  filter(!has_match_llm_nocontext_loop_icd10) |>
+  write.csv(
+    here::here("data-raw/patient_data/dx_llm_nocontext_loop_icd10_superset_roadmap_unmatched.csv"),
+    row.names = FALSE
+  )
 
 library(ggplot2)
 paper_colors = c("#ff99ff", "#787ff6", "#8bdddb", "#7dd5f6", "#ffbd59") # Define colors
