@@ -75,7 +75,7 @@ all_combn = expand.grid(DATA = c("Extracted EHR Data",
                         NUM_MISSING = 0:10)
 
 # Create bar plot of missing values per component (colored by wave)
-num_miss |> 
+bar_plot1 = num_miss |> 
   group_by(DATA, NUM_MISSING) |> 
   summarize(n = n()) |> 
   full_join(all_combn) |> 
@@ -87,25 +87,31 @@ num_miss |>
            position = position_dodge(width = 1), 
            color = "black") + 
   geom_text(aes(label = n), 
-            vjust = -1, 
-            size = 4, 
+            vjust = -0.5, 
+            size = 4.5, 
             position = position_dodge(width = 1)) + 
   theme_minimal(base_size = 20) + 
-  labs(x = "Number of Missing Allostatic Load Index Components", 
-       y = "Number of Patients") +
+  labs(x = "Number of Missing ALI Components", 
+       y = "Number of Patients Missing that Number of Components") +
   theme(title = element_text(face = "bold"), 
         legend.position = "inside", 
         legend.position.inside = c(1, 0.75),
         legend.title = element_text(face = "bold"), 
         legend.justification = "right", 
-        legend.background = element_rect(fill = "white")) + 
-  scale_fill_manual(values = cols, name = "Data Source:") + 
+        legend.background = element_rect(fill = "white"), 
+        strip.text = element_text(face = "bold", color = "white"), 
+        strip.background = element_rect(fill = "black"), 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), 
+        panel.border = element_rect(color = "black")) + 
+  scale_fill_manual(values = cols, name = "Data Source:", guide = "none") + 
   scale_y_continuous(expand = expansion(mult = c(0, 0.1))) + 
-  scale_x_continuous(breaks = 0:10)
-
+  scale_x_continuous(breaks = 0:10) + 
+  facet_wrap(~DATA, ncol = 1)
+bar_plot1
 ## Save it 
 ggsave(filename = "~/Documents/ehr-llm-validation/figures/missing_by_patient.png", 
-       device = "png", width = 14, height = 7, units = "in")
+       device = "png", width = 9, height = 13, units = "in")
 
 ## Calculate median non-missing 
 med_nonmiss = num_miss |> 
@@ -114,3 +120,4 @@ med_nonmiss = num_miss |>
             q1_nonmiss = quantile(x = (10 - NUM_MISSING), 0.25),
             median_nonmiss = median(10 - NUM_MISSING), 
             q3_nonmiss = quantile(x = (10 - NUM_MISSING), 0.75))
+med_nonmiss

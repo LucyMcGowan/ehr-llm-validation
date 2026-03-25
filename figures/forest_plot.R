@@ -97,7 +97,7 @@ res |>
         strip.background = element_rect(fill = "black")) + 
         #axis.text.x = element_blank()) + 
   scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 12)) + 
-  scale_color_manual(values = c(cols[2], "#787ff6", cols[5]),  #"lightgrey", 
+  scale_color_manual(values = cols, #c(cols[2], "#787ff6", cols[5]),  #"lightgrey", 
                      name = "Data Source:", 
                      labels = function(x) stringr::str_wrap(x, width = 12), 
                      guide = "none")
