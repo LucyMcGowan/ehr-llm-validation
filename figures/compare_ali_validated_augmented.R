@@ -30,15 +30,14 @@ scatter_plot = all_data |>
                                   "Expert Chart Reviews", 
                                   "Algorithm w/ LLM (Context + Clinicians)"))) |> 
   ggplot(aes(x = ALI, 
-             y = VAL, 
-             color = DATA)) + 
-  geom_point(size = 2) + 
-  geom_abline(slope = 1, intercept = 0, linetype = 2, color = "black") + 
-  geom_smooth(se = FALSE) + 
+             y = VAL)) + 
+  geom_point(aes(color = DATA), size = 5, alpha = 0.8) + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2, color = "black", linewidth = 1.5) + 
+  geom_smooth(se = FALSE, color = "black", linewidth = 1.5) + 
   theme_minimal(base_size = 20) + 
-  labs(x = "Allostatic Load Index from Extracted Electronic Health Records Data", 
-       y = "Allostatic Load Index from Expert Chart Reviews/Algorithm") + 
-  scale_color_manual(values = cols[c(2, 5)], guide = FALSE) + 
+  labs(x = "ALI from Extracted Electronic Health Records Data", 
+       y = "ALI from Expert Chart Reviews/Algorithm") + 
+  scale_color_manual(values = cols[c(2, 3)], guide = FALSE) + 
   coord_equal() + 
   facet_wrap(~DATA) + 
   theme(title = element_text(face = "bold"), 
