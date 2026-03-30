@@ -29,7 +29,10 @@ nrow(ehr_ali_long) ## Notice: Still 10,000 rows after join! One per patient per 
 
 # Define ALI_COMPONENT = 1 if any matched_terms present
 ehr_ali_long = ehr_ali_long |> 
-  mutate(SUPP_ALI_COMPONENT = if_else(condition = is.na(ALI_COMPONENT) & !is.na(matched_terms), ## ALI component was missing and auxiliary information found 
+  mutate(ICD_ALI_COMPONENT = if_else(condition = !is.na(matched_terms), ## ALI component was missing and auxiliary information found 
+                                     true = 1, ## goes from NA --> 1 (unhealthy)
+                                     false = NA), 
+         SUPP_ALI_COMPONENT = if_else(condition = is.na(ALI_COMPONENT) & !is.na(matched_terms), ## ALI component was missing and auxiliary information found 
                                       true = 1, ## goes from NA --> 1 (unhealthy)
                                       false = ALI_COMPONENT)) |> ## otherwise stays the same as in EHR
   group_by(PAT_MRN_ID) |> ## group by patient 

@@ -7,7 +7,6 @@ dx_original |>
   nrow() ## n = 211 diagnoses matched patients in our sample
 
 dx_llm_context = read.csv(here::here("data-raw/patient_data/dx_llm_context_superset_roadmap.csv"))
-
 dx_llm_context |> 
   select(Variable_Name, DX_CODE, DX_DESC, matched_terms_llm_context) |> 
   arrange(Variable_Name, DX_CODE) |> 
