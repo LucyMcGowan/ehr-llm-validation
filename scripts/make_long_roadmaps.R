@@ -22,6 +22,14 @@ llm_nocontext_long |>
 llm_nocontext_long |> 
   write.csv(here::here("~/Documents/ehr-llm-validation/data-raw/llm_nocontext_superset_roadmap_long.csv"))
 
+llm_nocontext_loop_icd10 = read.csv(here::here("~/Documents/ehr-llm-validation/data-raw/llm_nocontext_loop_icd10_superset_roadmap.csv"))
+llm_nocontext_loop_icd10_long = do.call(rbind, lapply(X = 1:10, FUN = make_terms_long, roadmap = llm_nocontext_loop_icd10)) 
+llm_nocontext_loop_icd10_long |> 
+  nrow() ## 656 suggested additional search terms (before matching to ICD)
+llm_nocontext_long |> 
+  write.csv(here::here("~/Documents/ehr-llm-validation/data-raw/llm_nocontext_loop_icd10_superset_roadmap_long.csv"))
+
+
 llm_context = read.csv(here::here("~/Documents/ehr-llm-validation/data-raw/llm_context_superset_roadmap.csv"))
 llm_context_long = do.call(rbind, lapply(X = 1:10, FUN = make_terms_long, roadmap = llm_context)) 
 llm_context_long |> 
