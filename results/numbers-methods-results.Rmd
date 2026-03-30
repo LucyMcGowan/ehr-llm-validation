@@ -1,0 +1,102 @@
+---
+title: "Updated numbers for Methods and Results"
+subtitle: "Revision for JAMIA Open"
+author: "Sarah Lotspeich"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(dplyr)
+```
+
+## Materials and Methods 
+
+```{r}
+make_terms_long = function(row, roadmap) {
+  stringr::str_trim(stringr::str_split(string = roadmap$If_Missing_Search_For[row], 
+                                       pattern = ";", simplify = TRUE)) |> 
+    data.frame() |> 
+    mutate(Variable_Name = roadmap$Variable_Name[row]) |> 
+    select(Variable_Name, everything()) |> 
+    setNames(c("Variable_Name", "Search_Term"))
+}
+```
+
+### LLMs (baseline) roadmap without context
+
+```{r}
+# Count how many unique search terms were proposed 
+search_terms = read.csv(here::here("~/Documents/ehr-llm-validation/data-raw/llm_nocontext_loop_icd10_superset_roadmap.csv"))
+search_terms_long = do.call(rbind, lapply(X = 1:10, FUN = make_terms_long, roadmap = search_terms)) 
+num_proposed = search_terms_long |> 
+  nrow() ## suggested additional search terms (before matching to ICD)
+search_terms_long |> 
+  write.csv(here::here("~/Documents/ehr-llm-validation/data-raw/llm_nocontext_loop_icd10_superset_roadmap_long.csv"))
+
+# Count how many ICD-10 codes the search terms matched (whether or not they were observed for patients in our sample)
+potential_dx = read.csv(here::here("~/Documents/ehr-llm-validation/data-raw/all_icd10_matches_llm_nocontext_loop_icd10.csv"))
+num_potential_dx = potential_dx |> 
+  nrow() ## search terms fuzzy matched ICD-10 code descriptions
+
+# Count how many ICD-10 codes the search terms matched (observed for patients in our sample)
+sample_dx = read.csv(here::here("data-raw/patient_data/dx_llm_nocontext_loop_icd10_superset_roadmap.csv"))
+num_sample_dx = sample_dx |> 
+  group_by(Variable_Name) |> 
+  summarize(num_uniq_dx = n_distinct(DX_CODE)) |> 
+  pull(num_uniq_dx) |> 
+  sum() ## search terms fuzzy matched ICD-10 code descriptions for patients in our sample (given to Ashish to review)
+```
+
+Ultimately, the *LLMs (baseline) roadmap* took the superset of these $20$ dataframes (i.e., the collection of terms that appeared at least once across the $20$ times that the LLMs completed the task). The LLMs (baseline) proposed `r num_proposed` search terms, not necessarily including the original $20$ from the clinicians' original roadmap. While these search terms matched `r num_potential_dx` ICD-10 codes, only `r num_sample_dx` of those codes (`r round(num_sample_dx/num_potential_dx * 100)`%) were observed for patients in our sample. After starting with `r round(num_proposed / 20)` times as many terms, the LLMs (baseline) roadmap matched `r round(num_sample_dx / 211, 1)` times as many patient diagnoses as the clinicians' original (Table 2), but it is important to remember that not all of these matches are necessarily clinically relevant. In other words, more matches it not always better.  
+
+### LLMs (baseline) roadmap with context
+
+```{r}
+# Count how many unique search terms were proposed 
+search_terms = read.csv(here::here("~/Documents/ehr-llm-validation/data-raw/llm_context_loop_icd10_superset_roadmap.csv"))
+search_terms_long = do.call(rbind, lapply(X = 1:10, FUN = make_terms_long, roadmap = search_terms)) 
+num_proposed = search_terms_long |> 
+  nrow() ## suggested additional search terms (before matching to ICD)
+search_terms_long |> 
+  write.csv(here::here("~/Documents/ehr-llm-validation/data-raw/llm_context_loop_icd10_superset_roadmap_long.csv"))
+
+# Count how many ICD-10 codes the search terms matched (whether or not they were observed for patients in our sample)
+potential_dx = read.csv(here::here("~/Documents/ehr-llm-validation/data-raw/all_icd10_matches_llm_context_loop_icd10.csv"))
+num_potential_dx = potential_dx |> 
+  nrow() ## search terms fuzzy matched ICD-10 code descriptions
+
+# Count how many ICD-10 codes the search terms matched (observed for patients in our sample)
+sample_dx = read.csv(here::here("data-raw/patient_data/dx_llm_context_loop_icd10_superset_roadmap.csv"))
+num_sample_dx = sample_dx |> 
+  group_by(Variable_Name) |> 
+  summarize(num_uniq_dx = n_distinct(DX_CODE)) |> 
+  pull(num_uniq_dx) |> 
+  sum() ## search terms fuzzy matched ICD-10 code descriptions for patients in our sample (given to Ashish to review)
+```
+
+*LLMs (context)* proposed `r num_proposed` search terms, which matched `r num_potential_dx` distinct ICD-10 codes (`r num_sample_dx` in our sample, `r round(num_sample_dx/num_potential_dx * 100)`%). Notably, LLMs (context) proposed fewer search terms and had fewer matching ICD-10 codes (both overall and in the sample), but more of the suggestions were expected to be clinically relevant.
+
+```{r}
+# Create list for clinicians to review 
+new_for_ashish = sample_dx |> 
+  select(Variable_Name, DX_CODE, DX_DESC, matched_terms_llm_context_loop_icd10) |>
+  arrange(Variable_Name, DX_CODE) |> 
+  distinct() 
+```
+
+```{r}
+# Create list for clinicians to review 
+old_from_ashish = read.csv("~/Documents/ehr-llm-validation/data-raw/AKK_llm_context_roadmap_for_ashish_all.csv") |> 
+  rename(CLINICALLY_RELEVANT_OLD = CLINICALLY_RELEVANT) |> 
+  select(-X, -MATCHED_TERMS, -ICD10_DX_DESC) |> 
+  distinct() ## remove one repeated row of N1830 for CREAT_C
+both_ashish = new_for_ashish |>
+  select(-DX_DESC, -matched_terms_llm_context_loop_icd10) |> 
+  full_join(old_from_ashish, by = join_by(DX_CODE == ICD_DX_CODE, Variable_Name == VARIABLE_NAME))
+new_for_ashish |> 
+  filter(DX_CODE %in% both_ashish$DX_CODE[is.na(both_ashish$CLINICALLY_RELEVANT_OLD)]) |> 
+  write.csv("~/Documents/ehr-llm-validation/data-raw/llm_context_loop_icd10_roadmap_for_clinician_review.csv", 
+            row.names = FALSE)
+```
