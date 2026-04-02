@@ -10,11 +10,11 @@ cols = c("#ff99ff", "#8bdddb", "#787ff6", "#ffbd59", "#7dd5f6", "#ff884d")
 # Load data
 ## Matched search terms 
 both_llm_matched = read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/dx_llm_nocontext_loop_icd10_superset_roadmap_separate_prompts.csv") |> 
-  mutate(method = "LLM (Baseline)") |> 
+  mutate(method = "LLMs (Baseline)") |> 
   select(id, Variable_Name, DX_CODE, method) |> 
   bind_rows(
     read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/dx_llm_context_loop_icd10_superset_roadmap_separate_prompts.csv") |> 
-      mutate(method = "LLM (Context)") |> 
+      mutate(method = "LLMs (Context)") |> 
       select(id, Variable_Name, DX_CODE, method) 
   ) |> 
   mutate(num = as.numeric(stringr::str_replace(id, ".*_", ""))) 
@@ -35,7 +35,7 @@ for (n in 1:20) {
 # Make line plot 
 plot_data = dx_llm_matched |> 
   mutate(method = factor(x = method, 
-                         levels = c("LLM (Baseline)", "LLM (Context)")), 
+                         levels = c("LLMs (Baseline)", "LLMs (Context)")), 
          Variable_Name = factor(x = Variable_Name,
                                 levels = c("A1C", "ALB", "BMI", "BP_DIASTOLIC", "BP_SYSTOLIC", 
                                            "CHOL", "CREAT_C", "CRP", "HCST",  "TRIG"),
@@ -50,11 +50,11 @@ plot_data = dx_llm_matched |>
 #   filter(max_num < 20)
 # ### Serum albumin 
 # add_alb_row = plot_data |> 
-#   filter(Variable_Name == "ALB", method == "LLM (Context)", what == "Matched", num == 19) |> 
+#   filter(Variable_Name == "ALB", method == "LLMs (Context)", what == "Matched", num == 19) |> 
 #   mutate(num = 20)
 # ### Triglycerides 
 # add_trig_row = plot_data |> 
-#   filter(Variable_Name == "TRIG", method == "LLM (Context)", what == "Matched", num == 19) |> 
+#   filter(Variable_Name == "TRIG", method == "LLMs (Context)", what == "Matched", num == 19) |> 
 #   mutate(num = 20)
 # 
 # plot_data = plot_data |> 
