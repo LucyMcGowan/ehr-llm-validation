@@ -4,14 +4,14 @@ library(tidyr) ## for separating rows
 library(stringr) ## to clean up strings
 
 # Read in ICD-10 Codes with Descriptions
-icd10 = read.csv(here::here("data-raw/icd10cm-codes-2026.csv")) |>
+icd10 = read.csv("data-raw/icd10cm-codes-2026.csv") |>
   mutate(
     DX_DESC = toupper(DX_DESC), ## Convert to all CAPS for easier search
     DX_DESC = str_trim(DX_DESC)
   ) ## Trim whitespace
 
 # Read in patient DX from sample of N = 1000
-pat_dx = read.csv(here::here("data-raw/patient_data/dx_2022-09-29.csv")) |>
+pat_dx = read.csv("data-raw/patient_data/dx_2022-09-29.csv") |>
   mutate(CONTACT_DATE = as.Date(CONTACT_DATE, format = "%m/%d/%y")) |> ## convert the CONTACT_DATE to Date
   filter(CONTACT_DATE <= "2020-03-10") |> ## only keep diagnoses on or before 2020-03-10
   mutate(DX_CODE = sub(pattern = "\\.", replacement = "", x = DX_CODE)) ## Remove periods to merge with icd10
@@ -26,7 +26,7 @@ pat_dx |>
   filter(is.na(DX_DESC)) |>
   nrow()
 ### Manual recoding / descriptions
-icd10_fix = read.csv(here::here("data-raw/fix-weird-icd-codes.csv")) |>
+icd10_fix = read.csv("data-raw/fix-weird-icd-codes.csv") |>
   rename(DX_CODE = OLD_DX_CODE, FIX_DX_CODE = DX_CODE, FIX_DX_DESC = DX_DESC)
 ### Merge into pat_dx
 pat_dx = pat_dx |>
@@ -60,9 +60,7 @@ pat_dx = pat_dx |>
 
 # Read in audit roadmaps
 ## LLM roadmap with context (for loop, ICD-10)
-roadmap_llm_context_loop_icd10 = read.csv(here::here(
-  "data-raw/llm_context_loop_icd10_superset_roadmap.csv"
-)) |>
+roadmap_llm_context_loop_icd10 = read.csv("data-raw/llm_context_loop_icd10_superset_roadmap.csv") |>
   dplyr::select(Variable_Name, If_Missing_Search_For) |>
   separate_longer_delim(cols = If_Missing_Search_For, delim = ";") |> ## Create separate rows for each variable, keyword combo
   mutate(
@@ -77,9 +75,7 @@ roadmap_llm_context_loop_icd10 = read.csv(here::here(
   )
 
 ## LLM roadmap no context (for loop, ICD-10)
-roadmap_llm_nocontext_loop_icd10 = read.csv(here::here(
-  "data-raw/llm_nocontext_loop_icd10_superset_roadmap.csv"
-)) |>
+roadmap_llm_nocontext_loop_icd10 = read.csv("data-raw/llm_nocontext_loop_icd10_superset_roadmap.csv") |>
   dplyr::select(Variable_Name, If_Missing_Search_For) |>
   separate_longer_delim(cols = If_Missing_Search_For, delim = ";") |> ## Create separate rows for each variable, keyword combo
   mutate(
@@ -129,6 +125,30 @@ matches_llm_nocontext_loop_icd10 = dx_uq |>
     .groups = "drop"
   )
 
+# Subset LLMs (context) to the ones Ashish agreed with 
+## Some overlapped with his review of original LLMs' additions 
+ashish_yn_orig = read.csv("data-raw/AKK_llm_context_roadmap_for_ashish_all.csv") |> 
+  rename(DX_CODE = ICD_DX_CODE) |> 
+  select(-X, -ICD10_DX_DESC)
+## From his review of revised LLMs' additions 
+ashish_yn_rev = read.csv("data-raw/AKK_llm_context_loop_icd10_roadmap_for_clinician.csv") |> 
+  mutate(CLINICALLY_RELEVANT = CLINICALLY_RELEVANT == "Y") |> 
+  rename(VARIABLE_NAME = Variable_Name, 
+         MATCHED_TERMS = matched_terms_llm_context_loop_icd10) |> 
+  select(-DX_DESC)
+## Stack them
+ashish_yn = ashish_yn_rev |> 
+  bind_rows(
+    ashish_yn_orig |> 
+      filter(!(DX_CODE %in% ashish_yn_rev$DX_CODE)) ## take most recent decisions, where applicable
+    ) |> 
+  unique()
+matches_llm_context_loop_icd10_clinician = matches_llm_context_loop_icd10 |> 
+  rename(VARIABLE_NAME = Variable_Name) |> 
+  select(-matched_terms_llm_context_loop_icd10) |> 
+  left_join(y = ashish_yn) |> 
+  filter(CLINICALLY_RELEVANT)
+
 # Merge crosswalk into patient diagnoses and create indicator of matched terms
 ## LLM Roadmap (Context, for loop and ICD-10)
 pat_dx_flags_llm_context_loop_icd10 = pat_dx |>
@@ -140,6 +160,20 @@ pat_dx_flags_llm_context_loop_icd10 = pat_dx |>
     has_match_llm_context_loop_icd10 = !is.na(matched_terms_llm_context_loop_icd10),
     matched_terms_llm_context_loop_icd10 = str_trim(replace_na(
       matched_terms_llm_context_loop_icd10,
+      ""
+    ))
+  )
+
+## LLM Roadmap (Context, Clinicians Reviewed, for loop and ICD-10)
+pat_dx_flags_llm_context_loop_icd10_clinician = pat_dx |>
+  left_join(
+    matches_llm_context_loop_icd10_clinician,
+    by = c("DX_CODE", "DX_DESC")
+  ) |>
+  mutate(
+    has_match_llm_context_loop_icd10_clinician = !is.na(MATCHED_TERMS),
+    matched_terms_llm_context_loop_icd10_clinician = str_trim(string = replace_na(
+      MATCHED_TERMS,
       ""
     ))
   )
@@ -165,6 +199,12 @@ pat_dx_flags_llm_context_loop_icd10 |>
     here::here("data-raw/patient_data/dx_llm_context_loop_icd10_superset_roadmap.csv"),
     row.names = FALSE
   )
+pat_dx_flags_llm_context_loop_icd10_clinician |>
+  filter(has_match_llm_context_loop_icd10_clinician) |>
+  write.csv(
+    "data-raw/patient_data/dx_llm_context_loop_icd10_clinician_superset_roadmap.csv",
+    row.names = FALSE
+  )
 pat_dx_flags_nocontext_loop_icd10 |>
   filter(has_match_llm_nocontext_loop_icd10) |>
   write.csv(
@@ -177,6 +217,12 @@ pat_dx_flags_llm_context_loop_icd10 |>
   filter(!has_match_llm_context_loop_icd10) |>
   write.csv(
     here::here("data-raw/patient_data/dx_llm_context_loop_icd10_superset_roadmap_unmatched.csv"),
+    row.names = FALSE
+  )
+pat_dx_flags_llm_context_loop_icd10_clinician |>
+  filter(!has_match_llm_context_loop_icd10_clinician) |>
+  write.csv(
+    "data-raw/patient_data/dx_llm_context_loop_icd10_clinician_superset_roadmap_unmatched.csv",
     row.names = FALSE
   )
 pat_dx_flags_nocontext_loop_icd10 |>
