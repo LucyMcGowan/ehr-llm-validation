@@ -13,8 +13,8 @@ ehr_ali_long = ehr_ali |>
 nrow(ehr_ali_long) ## Check: 10,000 rows (one per patient per component)
 
 # Merge in the ICD mapping
-icd_dx = read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/dx_llm_context_loop_icd10_superset_roadmap.csv") |> 
-  rename(matched_terms = matched_terms_llm_context_loop_icd10) |> 
+icd_dx = read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/dx_llm_nocontext_loop_icd10_superset_roadmap.csv") |> 
+  rename(matched_terms = matched_terms_llm_nocontext_loop_icd10) |> 
   dplyr::select(PAT_MRN_ID, DX_CODE, DX_DESC, Variable_Name, matched_terms) |> 
   unique() |> 
   group_by(PAT_MRN_ID, Variable_Name) |> ## Some people had multiple ICD codes per component
@@ -59,5 +59,5 @@ all_dat = ehr_ali_long |>
 nrow(ehr_ali_long) ## Notice: Still 10,000 rows after join! One per patient per component. 
 
 all_dat |> 
-  write.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_loop_icd10_roadmap.csv", 
+  write.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_nocontext_loop_icd10_roadmap.csv", 
             row.names = FALSE)
