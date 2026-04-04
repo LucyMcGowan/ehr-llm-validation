@@ -127,20 +127,21 @@ matches_llm_nocontext_loop_icd10 = dx_uq |>
 
 # Subset LLMs (context) to the ones Ashish agreed with 
 ## Some overlapped with his review of original LLMs' additions 
-ashish_yn_orig = read.csv("data-raw/AKK_llm_context_roadmap_for_ashish_all.csv") |> 
-  rename(DX_CODE = ICD_DX_CODE) |> 
-  select(-X, -ICD10_DX_DESC)
+clinician_yn_orig = read.csv("data-raw/llm_context_superset_roadmap_clinician_reviewed.csv") |> 
+  select(-X, -DX_DESC) |> 
+  rename(VARIABLE_NAME = Variable_Name, 
+         MATCHED_TERMS = matched_terms_llm_context_clinician)
 ## From his review of revised LLMs' additions 
-ashish_yn_rev = read.csv("data-raw/AKK_llm_context_loop_icd10_roadmap_for_clinician.csv") |> 
+clinician_yn_rev = read.csv("data-raw/AKK_llm_context_loop_icd10_roadmap_for_clinician.csv") |> 
   mutate(CLINICALLY_RELEVANT = CLINICALLY_RELEVANT == "Y") |> 
   rename(VARIABLE_NAME = Variable_Name, 
          MATCHED_TERMS = matched_terms_llm_context_loop_icd10) |> 
   select(-DX_DESC)
 ## Stack them
-ashish_yn = ashish_yn_rev |> 
+clinician_yn = clinician_yn_rev |> 
   bind_rows(
-    ashish_yn_orig |> 
-      filter(!(DX_CODE %in% ashish_yn_rev$DX_CODE)) ## take most recent decisions, where applicable
+    clinician_yn_orig |> 
+      filter(!(DX_CODE %in% clinician_yn_rev$DX_CODE)) ## take most recent decisions, where applicable
     ) |> 
   unique()
 matches_llm_context_loop_icd10_clinician = matches_llm_context_loop_icd10 |> 
@@ -148,6 +149,8 @@ matches_llm_context_loop_icd10_clinician = matches_llm_context_loop_icd10 |>
   select(-matched_terms_llm_context_loop_icd10) |> 
   left_join(y = ashish_yn) |> 
   filter(CLINICALLY_RELEVANT)
+matches_llm_context_loop_icd10_clinician |> 
+  write.csv("~/Documents/ehr-llm-validation/data-raw/llm_context_loop_icd10_superset_roadmap_clinician_reviewed.csv")
 
 # Merge crosswalk into patient diagnoses and create indicator of matched terms
 ## LLM Roadmap (Context, for loop and ICD-10)
