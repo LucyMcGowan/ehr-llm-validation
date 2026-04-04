@@ -21,7 +21,7 @@ all_data = read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_da
   select(PAT_MRN_ID, Variable_Name, ALI_COMPONENT, SUPP_ALI_COMPONENT, CHART_ALI_COMPONENT) |> 
   rename(ORIG_ALI_COMPONENT = SUPP_ALI_COMPONENT) |> 
   left_join(
-    read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_nocontext_roadmap.csv") |> 
+    read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_nocontext_loop_icd10_roadmap.csv") |> 
       mutate(CHART_ALI_COMPONENT = if_else(condition = !is.na(ALI_COMPONENT) & is.na(CHART_ALI_COMPONENT), 
                                            true = ALI_COMPONENT, 
                                            false = CHART_ALI_COMPONENT)) |> 
@@ -29,7 +29,7 @@ all_data = read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_da
       rename(LLM_ALI_COMPONENT = SUPP_ALI_COMPONENT)
   ) |> 
   left_join(
-    read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_clinician_roadmap.csv") |> 
+    read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_loop_icd10_clinician_roadmap.csv") |> 
       mutate(CHART_ALI_COMPONENT = if_else(condition = !is.na(ALI_COMPONENT) & is.na(CHART_ALI_COMPONENT), 
                                            true = ALI_COMPONENT, 
                                            false = CHART_ALI_COMPONENT)) |> 
@@ -37,7 +37,7 @@ all_data = read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_da
       rename(LLM_CONTEXT_CLINICIAN_ALI_COMPONENT = SUPP_ALI_COMPONENT)
   ) |> 
   left_join(
-    read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_roadmap.csv") |> 
+    read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_loop_icd10_roadmap.csv") |> 
       mutate(CHART_ALI_COMPONENT = if_else(condition = !is.na(ALI_COMPONENT) & is.na(CHART_ALI_COMPONENT), 
                                            true = ALI_COMPONENT, 
                                            false = CHART_ALI_COMPONENT)) |> 
@@ -77,10 +77,10 @@ bar_plot2 = num_miss |>
                                   "LLM_CONTEXT_ALI_COMPONENT"), 
                        labels = c("Extracted EHR Data", 
                                   "Expert Chart Reviews", 
-                                  "Algorithm w/ LLM (Baseline)",
+                                  "Algorithm w/ LLMs (Baseline)",
                                   "Algorithm w/ Clinicians' Original", 
-                                  "Algorithm w/ LLM (Context + Clinicians)", 
-                                  "Algorithm w/ LLM (Context)"))) |> 
+                                  "Algorithm w/ LLMs (Context + Clinicians)", 
+                                  "Algorithm w/ LLMs (Context)"))) |> 
   ggplot(aes(x = Variable_Name, 
              y = NUM_MISSING, 
              fill = DATA)) + 
@@ -113,5 +113,5 @@ bar_plot2 = num_miss |>
 bar_plot2 
 
 ## Save it 
-ggsave(filename = "~/Documents/ehr-llm-validation/figures/missing_by_component.png", 
+ggsave(filename = "~/Documents/ehr-llm-validation/figures/missing_by_component_revised.png", 
        device = "png", width = 9, height = 13, units = "in")
