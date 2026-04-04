@@ -149,6 +149,15 @@ make_flowchart(data_path = "~/Documents/ehr-llm-validation/data-raw/patient_data
                save_as = "~/Documents/ehr-llm-validation/figures/ehr_vs_llm_nocontext_flowchart.png", 
                start_with_ehr = TRUE)
 
+# Make plots for LLMs (without context, for loop + ICD-10) roadmap vs. chart reviews
+make_flowchart(data_path = "~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_nocontext_loop_icd10_roadmap.csv", 
+               save_as = "~/Documents/ehr-llm-validation/figures/chart_vs_llm_nocontext_loop_icd10_flowchart.png")
+
+# Make plots for LLMs (without context, for loop + ICD-10) roadmap vs. EHR
+make_flowchart(data_path = "~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_nocontext_loop_icd10_roadmap.csv", 
+               save_as = "~/Documents/ehr-llm-validation/figures/ehr_vs_llm_nocontext_loop_icd10_flowchart.png", 
+               start_with_ehr = TRUE)
+
 # Make plots for LLMs (with context) roadmap vs. chart review
 make_flowchart(data_path = "~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_roadmap.csv", 
                save_as = "~/Documents/ehr-llm-validation/figures/chart_vs_llm_context_flowchart.png")
@@ -158,6 +167,15 @@ make_flowchart(data_path = "~/Documents/ehr-llm-validation/data-raw/patient_data
                save_as = "~/Documents/ehr-llm-validation/figures/ehr_vs_llm_context_flowchart.png", 
                start_with_ehr = TRUE)
 
+# Make plots for LLMs (with context, for loop + ICD-10) roadmap vs. chart review
+make_flowchart(data_path = "~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_loop_icd10_roadmap.csv", 
+               save_as = "~/Documents/ehr-llm-validation/figures/chart_vs_llm_context_loop_icd10_flowchart.png")
+
+# Make plots for LLMs (with context, for loop + ICD-10) roadmap vs. EHR
+make_flowchart(data_path = "~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_loop_icd10_roadmap.csv", 
+               save_as = "~/Documents/ehr-llm-validation/figures/ehr_vs_llm_context_loop_icd10_flowchart.png", 
+               start_with_ehr = TRUE)
+
 # Make plots for LLMs (with context) + clinician roadmap vs. chart review
 make_flowchart(data_path = "~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_clinician_roadmap.csv", 
                save_as = "~/Documents/ehr-llm-validation/figures/chart_vs_llm_context_clinician_flowchart.png")
@@ -165,4 +183,13 @@ make_flowchart(data_path = "~/Documents/ehr-llm-validation/data-raw/patient_data
 # Make plots for LLMs (with context) + clinician roadmap vs. EHR
 make_flowchart(data_path = "~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_clinician_roadmap.csv", 
                save_as = "~/Documents/ehr-llm-validation/figures/ehr_vs_llm_context_clinician_flowchart.png", 
+               start_with_ehr = TRUE)
+
+# Make plots for LLMs (with context) + clinician roadmap vs. chart review
+make_flowchart(data_path = "~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_loop_icd10_clinician_roadmap.csv", 
+               save_as = "~/Documents/ehr-llm-validation/figures/chart_vs_llm_context_loop_icd10_clinician_flowchart.png")
+
+# Make plots for LLMs (with context) + clinician roadmap vs. EHR
+make_flowchart(data_path = "~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_loop_icd10_clinician_roadmap.csv", 
+               save_as = "~/Documents/ehr-llm-validation/figures/ehr_vs_llm_context_loop_icd10_clinician_flowchart.png", 
                start_with_ehr = TRUE)
