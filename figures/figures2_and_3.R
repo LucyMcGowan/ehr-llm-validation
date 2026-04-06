@@ -15,5 +15,5 @@ source("~/Documents/ehr-llm-validation/figures/missing_by_component_full_sample.
 bar_plot1 + bar_plot2 + plot_annotation(tag_levels = "A")
 
 ## Save it 
-ggsave(filename = "~/Documents/ehr-llm-validation/figures/fig3_missing_by_patient_and_component_full_sample.png", 
+ggsave(filename = "~/Documents/ehr-llm-validation/figures/fig3_missing_by_patient_and_component_full_sample_revised.png", 
        device = "png", width = 20, height = 12, units = "in")

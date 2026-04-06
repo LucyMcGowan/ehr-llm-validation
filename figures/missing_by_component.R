@@ -115,3 +115,66 @@ bar_plot2
 ## Save it 
 ggsave(filename = "~/Documents/ehr-llm-validation/figures/missing_by_component_revised.png", 
        device = "png", width = 9, height = 13, units = "in")
+
+# Calculate number recovered per roadmap per component 
+num_recov = num_miss |> 
+  group_by(Variable_Name) |> 
+  mutate(NUM_MISSING_EHR = max(NUM_MISSING), 
+         NUM_RECOVERED = NUM_MISSING_EHR - NUM_MISSING)
+num_recov |> 
+  mutate(Variable_Name = factor(x = Variable_Name, 
+                                levels = order_levels, 
+                                labels = c("CC", "HCST", "CRP", "HBA1C", "CHOL", "TRIG", "ALB", "BMI", "SBP", "DBP")), # , 
+         # labels = c("Creatinine Clearance", "Homo-\ncysteine",
+         #            "C-Reactive Protein", "Hemoglobin A1C", 
+         #            "Cholest-\nerol", "Trigly-\ncerides", 
+         #            "Serum Albumin", "Body Mass Index", 
+         #            "Systolic Blood Pressure", 
+         #            "Diastolic Blood Pressure")), 
+         DATA = factor(x = DATA, 
+                       levels = c("ALI_COMPONENT", 
+                                  "CHART_ALI_COMPONENT", 
+                                  "LLM_ALI_COMPONENT",
+                                  "ORIG_ALI_COMPONENT", 
+                                  "LLM_CONTEXT_CLINICIAN_ALI_COMPONENT",
+                                  "LLM_CONTEXT_ALI_COMPONENT"), 
+                       labels = c("Extracted EHR Data", 
+                                  "Expert Chart Reviews", 
+                                  "Algorithm w/ LLMs (Baseline)",
+                                  "Algorithm w/ Clinicians' Original", 
+                                  "Algorithm w/ LLMs (Context + Clinicians)", 
+                                  "Algorithm w/ LLMs (Context)"))) |> 
+  ggplot(aes(x = Variable_Name, 
+             y = NUM_RECOVERED, 
+             fill = DATA)) + 
+  geom_bar(stat = "identity", 
+           position = position_dodge(width = 1), 
+           color = "black") + 
+  geom_text(aes(label=NUM_RECOVERED), 
+            vjust = -0.25, 
+            size = 4.5, 
+            position = position_dodge(width = 1)) + 
+  theme_minimal(base_size = 20) + 
+  labs(x = "ALI Component", 
+       y = "Number of Patients Missing the Component") +
+  theme(title = element_text(face = "bold"), 
+        legend.position = "inside", 
+        legend.position.inside = c(1, 0.75),
+        legend.title = element_text(face = "bold"), 
+        legend.justification = "right", 
+        legend.background = element_rect(fill = "white"), 
+        strip.text = element_text(face = "bold", color = "white"), 
+        strip.background = element_rect(fill = "black"), 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), 
+        panel.border = element_rect(color = "black")) + 
+  scale_fill_manual(values = cols, name = "Data:", guide = "none") + 
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) + 
+  scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 8)) + 
+  facet_wrap(~DATA, ncol = 1)
+## Save it 
+ggsave(filename = "~/Documents/ehr-llm-validation/figures/recovered_by_component_revised.png", 
+       device = "png", width = 9, height = 13, units = "in")
+num_recov |> 
+  group_by(DATA) |> 
+  summarize(MAX_NUM_RECOVERED = max(NUM_RECOVERED))

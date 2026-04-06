@@ -15,7 +15,7 @@ all_data = read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_da
                                        false = CHART_ALI_COMPONENT)) |> 
   select(PAT_MRN_ID, Variable_Name, ALI_COMPONENT, CHART_ALI_COMPONENT) |> 
   left_join(
-    read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_clinician_roadmap.csv") |> 
+    read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_loop_icd10_clinician_roadmap.csv") |> 
       mutate(CHART_ALI_COMPONENT = if_else(condition = !is.na(ALI_COMPONENT) & is.na(CHART_ALI_COMPONENT), 
                                            true = ALI_COMPONENT, 
                                            false = CHART_ALI_COMPONENT)) |> 
@@ -89,7 +89,7 @@ bar_plot2 = num_miss |>
 
 ## Save it 
 bar_plot2
-ggsave(filename = "~/Documents/ehr-llm-validation/figures/missing_by_component_full_sample.png", 
+ggsave(filename = "~/Documents/ehr-llm-validation/figures/missing_by_component_full_sample_revised.png", 
        device = "png", width = 9, height = 13, units = "in")
 
 ## Calculate median non-missing 
