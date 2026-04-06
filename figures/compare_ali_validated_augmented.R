@@ -13,7 +13,7 @@ all_data = read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_da
   select(PAT_MRN_ID, ANY_ENCOUNTERS, AGE_AT_ENCOUNTER, ALI, CHART_ALI) |> 
   unique() |> 
   left_join(
-    read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_clinician_roadmap.csv") |> 
+    read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_loop_icd10_clinician_roadmap.csv") |> 
       select(PAT_MRN_ID, SUPP_ALI) |> 
       rename(ALG_AUG_ALI = SUPP_ALI) |> 
       unique()
@@ -52,7 +52,7 @@ scatter_plot = all_data |>
 scatter_plot
 
 ## Save it 
-ggsave(filename = "~/Documents/ehr-llm-validation/figures/compare_ali_validated_augmented.png", 
+ggsave(filename = "~/Documents/ehr-llm-validation/figures/compare_ali_validated_augmented_revised.png", 
        device = "png", width = 14, height = 10, units = "in")
 
 box_plot = all_data |> 
@@ -63,7 +63,7 @@ box_plot = all_data |>
                                   "ALG_AUG_ALI"), 
                        labels = c("Extracted EHR Data", 
                                   "Expert Chart Reviews", 
-                                  "Missing Data Recovery Algorithm"))) |>
+                                  "Algorithm w/ LLM (Context + Clinicians)"))) |>
   filter(DATA != "Expert Chart Reviews") |> 
   ggplot(aes(x = DATA, 
              y = VAL, 
@@ -72,7 +72,7 @@ box_plot = all_data |>
   theme_minimal(base_size = 14) + 
   labs(x = "Data Source", 
        y = "Allostatic Load Index ") + 
-  scale_fill_manual(values = cols[c(2, 5)], guide = "none") + 
+  scale_fill_manual(values = cols[c(1, 3)], guide = "none") + 
   theme(title = element_text(face = "bold"), 
         legend.position = "inside", 
         legend.position.inside = c(0.05, 0.9),
@@ -84,5 +84,5 @@ box_plot = all_data |>
   coord_flip() 
 box_plot
 ## Save it 
-ggsave(filename = here::here("Documents/ehr-llm-validation/figures/compare_ali_validated_augmented_boxplot.png"), 
+ggsave(filename = here::here("Documents/ehr-llm-validation/figures/compare_ali_validated_augmented_boxplot_revised.png"), 
        device = "png", width = 7, height = 5, units = "in")
