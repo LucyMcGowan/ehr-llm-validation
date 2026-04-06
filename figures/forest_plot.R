@@ -12,7 +12,7 @@ all_data = read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_da
   select(PAT_MRN_ID, ANY_ENCOUNTERS, AGE_AT_ENCOUNTER, ALI, CHART_ALI) |> 
   unique() |> 
   left_join(
-    read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_clinician_roadmap.csv") |> 
+    read.csv("~/Documents/ehr-llm-validation/data-raw/patient_data/ali_dat_llm_context_loop_icd10_clinician_roadmap.csv") |> 
       select(PAT_MRN_ID, SUPP_ALI) |> 
       rename(ALG_AUG_ALI = SUPP_ALI) |> 
       unique()
@@ -102,5 +102,5 @@ res |>
                      labels = function(x) stringr::str_wrap(x, width = 12), 
                      guide = "none")
 ## Save it 
-ggsave(filename = "~/Documents/ehr-llm-validation/figures/forest_plot_full_sample.png", 
+ggsave(filename = "~/Documents/ehr-llm-validation/figures/forest_plot_full_sample_revised.png", 
        device = "png", width = 14, height = 7, units = "in")  
