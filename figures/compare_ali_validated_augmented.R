@@ -86,3 +86,11 @@ box_plot
 ## Save it 
 ggsave(filename = here::here("Documents/ehr-llm-validation/figures/compare_ali_validated_augmented_boxplot_revised.png"), 
        device = "png", width = 7, height = 5, units = "in")
+
+# Calculate medians 
+## Extracted EHR 
+quantile(all_data$ALI, probs = c(0.25, 0.5, 0.75))
+## Chart review 
+quantile(all_data$CHART_ALI, probs = c(0.25, 0.5, 0.75), na.rm = TRUE)
+## Algorithm 
+quantile(all_data$ALG_AUG_ALI, probs = c(0.25, 0.5, 0.75), na.rm = TRUE)
