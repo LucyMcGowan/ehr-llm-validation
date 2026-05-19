@@ -178,3 +178,9 @@ ggsave(filename = "~/Documents/ehr-llm-validation/figures/recovered_by_component
 num_recov |> 
   group_by(DATA) |> 
   summarize(MAX_NUM_RECOVERED = max(NUM_RECOVERED))
+
+num_recov |> 
+  group_by(DATA) |> 
+  summarize(SUM_NUM_MISSING_EHR = sum(NUM_MISSING_EHR), 
+            SUM_NUM_RECOVERED = sum(NUM_RECOVERED)) |> 
+  mutate(PROP_RECOVERED = SUM_NUM_RECOVERED / SUM_NUM_MISSING_EHR)
